@@ -16,7 +16,3 @@
 <#event_reminders> schema:name "Event reminders"; schema:description "Event reminders give you with peace of mind that you'll remember tasks, and reduce mental load required to keep track of them.".
 <#focus> schema:name "Focus";schema:url <https://github.com/NoelDeMartin/solid-focus>;schema:description "Provides task lists. Notes functionality allows the user to make connections and include links associated with the task.".
 <#alternative-to-task-management> schema:name "AlternativeTo: Task Management";schema:url <https://alternativeto.net/browse/all/?tag=task-management>.
-<./> 
-<http://mementoweb.org/ns#original>
-<https://flow-coop-pages.netlify.app/topics/task_management/>;
-prov:wasGeneratedBy <https://flow-coop-pages.netlify.app/topics/task_management/history/changelog/1.ttl#3>.
