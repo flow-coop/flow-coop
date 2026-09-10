@@ -1,0 +1,3 @@
+<#it> <https://schema.org/name> "Flow coop";
+    </templates/discussion/terms#actor> <https://flow-coop.netlify.app/flow_coop>;
+    </templates/discussion/terms#outbox> <https://flow-coop.netlify.app/flow_coop/outbox/>.

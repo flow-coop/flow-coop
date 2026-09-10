@@ -1,0 +1,107 @@
+<flow-fediverse-interaction mode="reply">
+  <article class="flow-comment-card">
+    <header class="flow-comment-meta">
+      <a class="flow-comment-source" data-original>View original post</a>
+      <pos-list rel="https://www.w3.org/ns/activitystreams#attributedTo">
+        <template>
+          <span class="flow-comment-author">
+            by <pos-rich-link><pos-label></pos-label></pos-rich-link>
+          </span>
+        </template>
+      </pos-list>
+      <span class="flow-comment-date">
+        <pos-value
+          predicate="https://www.w3.org/ns/activitystreams#published"
+        ></pos-value>
+      </span>
+    </header>
+
+    <flow-sanitized-content
+      class="flow-comment-content"
+      predicate="https://www.w3.org/ns/activitystreams#content"
+    ></flow-sanitized-content>
+
+    <footer class="flow-comment-actions">
+      <button class="flow-button flow-button-secondary" data-trigger type="button">
+        Reply from the Fediverse
+      </button>
+    </footer>
+  </article>
+  <dialog
+    aria-label="Reply from the Fediverse"
+    class="flow-interaction-dialog"
+    data-dialog
+  >
+    <div class="flow-interaction-dialog-body">
+      <header>
+        <h3>Continue on your Fediverse server</h3>
+        <p>Your server will handle sign-in and opening the reply composer.</p>
+      </header>
+      <label class="flow-interaction-field">
+        <span>Your Fediverse address</span>
+        <input
+          autocomplete="username"
+          data-account
+          inputmode="email"
+          placeholder="@you@example.social"
+          spellcheck="false"
+          type="text"
+        />
+      </label>
+      <p class="flow-interaction-status" data-status-for="resolving" hidden>
+        Finding this post on your server...
+      </p>
+      <div class="flow-interaction-errors" role="alert">
+        <p data-error-for="invalid-account" hidden>
+          Enter a complete address such as @you@example.social.
+        </p>
+        <p data-error-for="invalid-response" hidden>
+          That server returned an unexpected account description.
+        </p>
+        <p data-error-for="unsupported" hidden>
+          That server does not advertise a compatible remote-post option.
+        </p>
+        <p data-error-for="unavailable" hidden>
+          Your server could not be reached. You can use the manual options below.
+        </p>
+        <p data-error-for="unsafe-destination" hidden>
+          The server advertised an unsafe destination, so Flow did not open it.
+        </p>
+        <p data-error-for="missing-context" hidden>
+          This comment does not expose enough information for a reply.
+        </p>
+        <p data-error-for="unsafe-resource" hidden>
+          The original post has an unsafe address and cannot be opened.
+        </p>
+        <p data-error-for="copy-failed" hidden>
+          The post address could not be copied automatically.
+        </p>
+      </div>
+      <div class="flow-interaction-fallback" data-fallback hidden>
+        <p>Copy the post address and paste it into your Fediverse app.</p>
+        <div class="flow-interaction-actions">
+          <button class="flow-button flow-button-secondary" data-copy type="button">
+            Copy post address
+          </button>
+          <a class="flow-button flow-button-secondary" data-open-server>
+            Open my server
+          </a>
+        </div>
+      </div>
+      <p class="flow-interaction-copied" aria-live="polite">
+        Post address copied.
+      </p>
+      <div class="flow-interaction-actions">
+        <button class="flow-button flow-button-primary" data-continue type="button">
+          Continue on my server
+        </button>
+        <button class="flow-button flow-button-secondary" data-cancel type="button">
+          Cancel
+        </button>
+        <button class="flow-link-button" data-forget hidden type="button">
+          Forget saved account
+        </button>
+      </div>
+    </div>
+  </dialog>
+</flow-fediverse-interaction>

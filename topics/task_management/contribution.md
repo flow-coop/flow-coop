@@ -1,0 +1,3 @@
+- Controlling or coordinating activities and their outcomes might contribute to your feeling of agency, and control over life.
+- Task management might also help get things done more efficiently. 
+- Some task management data flows might be more convenient or support decision making. Some tasks might help provide a more comfortable life.

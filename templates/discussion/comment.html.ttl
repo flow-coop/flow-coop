@@ -1,0 +1,11 @@
+<#it> a <https://schema.org/Thing>;
+    <http://www.w3.org/ns/solid/terms#focused> false;
+    <https://schema.org/additionalType> "Document";
+    <https://schema.org/creativeWorkStatus> "inbox";
+    <https://schema.org/name> "comment.html";
+    <https://schema.org/encodingFormat> "text/html";
+    <https://schema.org/contentUrl> <comment.html>.
+<#it-metadata> a <https://vocab.noeldemartin.com/crdt/Metadata>;
+    <https://vocab.noeldemartin.com/crdt/createdAt> "2026-09-05T16:49:03.253Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;
+    <https://vocab.noeldemartin.com/crdt/resource> <#it>;
+    <https://vocab.noeldemartin.com/crdt/updatedAt> "2026-09-05T16:49:03.253Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>.

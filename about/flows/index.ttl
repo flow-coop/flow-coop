@@ -1,0 +1,5 @@
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix schema: <https://schema.org/>.
+<#it> <https://schema.org/name> "Flows";
+    </templates/discussion/terms#actor> <https://flow-coop.netlify.app/flows>;
+    </templates/discussion/terms#outbox> <https://flow-coop.netlify.app/flows/outbox/>.

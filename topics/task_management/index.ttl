@@ -1,0 +1,22 @@
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix schema: <https://schema.org/>.
+
+<#it> <https://schema.org/name> "Task management";
+    <https://schema.org/description> "When managing tasks, flows can support you in controlling or coordinating a set of activities and their outcomes.";
+    <https://flow-coop-pages.netlify.app/topics/task_management/index.ttl#flows> <#task_manager>, <#booking_appointments>, <#kanban>, <#event_reminders>;
+    <https://flow-coop-pages.netlify.app/topics/task_management/index.ttl#contribution> <contribution.md>;
+    <https://flow-coop-pages.netlify.app/templates/discussion/terms#actor> <https://flow-coop.netlify.app/task_management>;
+    <https://flow-coop-pages.netlify.app/topics/task_management/index.ttl#tools> <#focus>, <#alternative-to-task-management>;
+    <https://flow-coop-pages.netlify.app/templates/discussion/terms#outbox> <https://flow-coop.netlify.app/task_management/outbox/>.
+<#task_manager> <https://schema.org/name> "Task manager";
+    <https://schema.org/description> "A task manager helps you organise a list of tasks that you want to track. This includes adding new tasks, prioritising them, and marking them as done.".
+    
+<#booking_appointments> schema:name "Booking appointments"; schema:description "Booking appointments involves scheduling a meeting with someone for a specific task, considering both of your calendars.".
+<#kanban> schema:name "Kanban"; schema:description "Kanban helps progress tasks along a workflow.".
+<#event_reminders> schema:name "Event reminders"; schema:description "Event reminders give you with peace of mind that you'll remember tasks, and reduce mental load required to keep track of them.".
+<#focus> schema:name "Focus";schema:url <https://github.com/NoelDeMartin/solid-focus>;schema:description "Provides task lists. Notes functionality allows the user to make connections and include links associated with the task.".
+<#alternative-to-task-management> schema:name "AlternativeTo: Task Management";schema:url <https://alternativeto.net/browse/all/?tag=task-management>.
+<./> 
+<http://mementoweb.org/ns#original>
+<https://flow-coop-pages.netlify.app/topics/task_management/>;
+prov:wasGeneratedBy <https://flow-coop-pages.netlify.app/topics/task_management/history/changelog/1.ttl#3>.
