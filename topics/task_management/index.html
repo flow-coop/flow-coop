@@ -54,16 +54,16 @@
       <pos-app>
         <pos-router mode="pod">
           <flow-version-context
-            uri="https://flow-coop-pages.netlify.app/topics/task_management/"
+            uri="https://flowcoop.eu/topics/task_management/"
           >
             <main class="flow-topic-shell">
               <pos-resource
-                uri="https://flow-coop-pages.netlify.app/topics/task_management/"
+                uri="https://flowcoop.eu/topics/task_management/"
               >
                 <import-html src="/templates/versions/status.html"></import-html>
               </pos-resource>
               <pos-resource
-                uri="https://flow-coop-pages.netlify.app/topics/task_management/index.ttl#it"
+                uri="https://flowcoop.eu/topics/task_management/index.ttl#it"
               >
                 <header class="flow-topic-header">
                   <h1><pos-label></pos-label></h1>
@@ -73,13 +73,13 @@
                 </header>
                 <pos-switch>
                   <pos-case
-                    if-property="https://flow-coop-pages.netlify.app/topics/task_management/index.ttl#contribution"
+                    if-property="https://flowcoop.eu/topics/task_management/index.ttl#contribution"
                   >
                     <template>
                       <section class="flow-topic-section">
                         <h2>Why?</h2>
                         <pos-list
-                          rel="https://flow-coop-pages.netlify.app/topics/task_management/index.ttl#contribution"
+                          rel="https://flowcoop.eu/topics/task_management/index.ttl#contribution"
                         >
                           <template>
                             <pos-app-document-viewer
@@ -91,14 +91,14 @@
                     </template>
                   </pos-case>
                   <pos-case
-                    if-property="https://flow-coop-pages.netlify.app/topics/task_management/index.ttl#flows"
+                    if-property="https://flowcoop.eu/topics/task_management/index.ttl#flows"
                   >
                     <template>
                       <section class="flow-topic-section">
                         <h2>Flows</h2>
                         <ul class="flow-topic-list">
                           <pos-list
-                            rel="https://flow-coop-pages.netlify.app/topics/task_management/index.ttl#flows"
+                            rel="https://flowcoop.eu/topics/task_management/index.ttl#flows"
                           >
                             <template>
                               <li>
@@ -112,14 +112,14 @@
                     </template>
                   </pos-case>
                   <pos-case
-                    if-property="https://flow-coop-pages.netlify.app/topics/task_management/index.ttl#tools"
+                    if-property="https://flowcoop.eu/topics/task_management/index.ttl#tools"
                   >
                     <template>
                       <section class="flow-topic-section">
                         <h2>Tools</h2>
                         <ul class="flow-topic-list">
                           <pos-list
-                            rel="https://flow-coop-pages.netlify.app/topics/task_management/index.ttl#tools"
+                            rel="https://flowcoop.eu/topics/task_management/index.ttl#tools"
                           >
                             <template>
                               <li>
@@ -136,12 +136,12 @@
                     </template>
                   </pos-case>
                   <pos-case
-                    if-property="https://flow-coop-pages.netlify.app/templates/discussion/terms#outbox"
+                    if-property="https://flowcoop.eu/templates/discussion/terms#outbox"
                   >
                     <template>
                       <section class="flow-discussion">
                         <pos-list
-                          rel="https://flow-coop-pages.netlify.app/templates/discussion/terms#actor"
+                          rel="https://flowcoop.eu/templates/discussion/terms#actor"
                           fetch
                         >
                           <template>
@@ -151,7 +151,7 @@
                           </template>
                         </pos-list>
                         <pos-list
-                          rel="https://flow-coop-pages.netlify.app/templates/discussion/terms#outbox"
+                          rel="https://flowcoop.eu/templates/discussion/terms#outbox"
                           fetch
                         >
                           <template>
@@ -166,7 +166,7 @@
                 </pos-switch>
               </pos-resource>
               <pos-resource
-                uri="https://flow-coop-pages.netlify.app/topics/task_management/"
+                uri="https://flowcoop.eu/topics/task_management/"
               >
                 <import-html src="/templates/changes.html"></import-html>
               </pos-resource>

@@ -3,11 +3,11 @@
 
 <#it> <https://schema.org/name> "Task management";
     <https://schema.org/description> "When managing tasks, flows can support you in controlling or coordinating a set of activities and their outcomes.";
-    <https://flow-coop-pages.netlify.app/topics/task_management/index.ttl#flows> <#task_manager>, <#booking_appointments>, <#kanban>, <#event_reminders>;
-    <https://flow-coop-pages.netlify.app/topics/task_management/index.ttl#contribution> <contribution.md>;
-    <https://flow-coop-pages.netlify.app/templates/discussion/terms#actor> <https://flow-coop.netlify.app/task_management>;
-    <https://flow-coop-pages.netlify.app/topics/task_management/index.ttl#tools> <#focus>, <#alternative-to-task-management>;
-    <https://flow-coop-pages.netlify.app/templates/discussion/terms#outbox> <https://flow-coop.netlify.app/task_management/outbox/>.
+    <https://flowcoop.eu/topics/task_management/index.ttl#flows> <#task_manager>, <#booking_appointments>, <#kanban>, <#event_reminders>;
+    <https://flowcoop.eu/topics/task_management/index.ttl#contribution> <contribution.md>;
+    <https://flowcoop.eu/templates/discussion/terms#actor> <https://flow-coop.netlify.app/task_management>;
+    <https://flowcoop.eu/topics/task_management/index.ttl#tools> <#focus>, <#alternative-to-task-management>;
+    <https://flowcoop.eu/templates/discussion/terms#outbox> <https://flow-coop.netlify.app/task_management/outbox/>.
 <#task_manager> <https://schema.org/name> "Task manager";
     <https://schema.org/description> "A task manager helps you organise a list of tasks that you want to track. This includes adding new tasks, prioritising them, and marking them as done.".
     
