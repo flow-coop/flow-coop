@@ -45,13 +45,13 @@
       type="module"
       src="/components/FlowFediverseInteraction.js"
     ></script>
-    <script type="module" src="/components/UpdateLocation.js"></script>
+    <script src="/components/UpdateLocation.js"></script>
   </head>
   <body>
     <ion-content>
       <pos-app>
         <pos-router mode="pod">
-          <pos-resource uri="https://flowcoop.eu/about/topics/history/draft/">
+          <pos-resource uri="https://flowcoop.eu/about/topics/">
             <import-html
               src="https://flowcoop.eu/templates/versions/status.html"
             ></import-html>
@@ -91,9 +91,7 @@
               </pos-list>
             </pos-resource>
           </ul>
-          <pos-resource
-            uri="https://flowcoop.eu/about/topics/history/draft/index.ttl#it"
-          >
+          <pos-resource uri="https://flowcoop.eu/about/topics/index.ttl#it">
             <h2>Proposed topics</h2>
             <ul>
               <pos-list
@@ -109,46 +107,10 @@
             <import-html src="/templates/discussion/header.html"></import-html>
             <import-html src="/templates/discussion/outbox.html"></import-html>
           </pos-resource>
-          <pos-resource uri="https://flowcoop.eu/about/topics/history/draft/">
+          <pos-resource uri="https://flowcoop.eu/about/topics/">
             <import-html src="/templates/changes.html"></import-html>
           </pos-resource>
         </pos-router> </pos-app
     ></ion-content>
-    <script>
-      (function () {
-        function c() {
-          var b =
-            a.contentDocument || (a.contentWindow && a.contentWindow.document);
-          if (b) {
-            var d = b.createElement("script");
-            d.innerHTML =
-              "window.__CF$cv$params={r:'a38d4c41fb055735',t:'MTc4OTAzMTQwOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
-            b.getElementsByTagName("head")[0].appendChild(d);
-          }
-        }
-        if (document.body) {
-          var a = document.createElement("iframe");
-          a.height = 1;
-          a.width = 1;
-          a.style.position = "absolute";
-          a.style.top = 0;
-          a.style.left = 0;
-          a.style.border = "none";
-          a.style.visibility = "hidden";
-          document.body.appendChild(a);
-          if ("loading" !== document.readyState) c();
-          else if (window.addEventListener)
-            document.addEventListener("DOMContentLoaded", c);
-          else {
-            var e = document.onreadystatechange || function () {};
-            document.onreadystatechange = function (b) {
-              e(b);
-              "loading" !== document.readyState &&
-                ((document.onreadystatechange = e), c());
-            };
-          }
-        }
-      })();
-    </script>
   </body>
 </html>
