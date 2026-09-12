@@ -11,6 +11,7 @@ import {
   FlowCollectionPages,
   validateCollectionResource,
 } from "/components/FlowCollectionPages.js";
+import { FlowCollectionGate } from "/components/FlowCollectionGate.js";
 import { FlowIfOpen } from "/components/FlowIfOpen.js";
 import { sanitizedContentFragment } from "/components/FlowSanitizedContent.js";
 
@@ -297,6 +298,23 @@ await test("collection handles pagination, cycles, caps, and descendant failures
   await capped.initialise(collection, ++capped._generation);
   await capped.loadNextPage();
   assert(capped.hasAttribute("capped"), "page cap was not surfaced");
+});
+
+await test("collection gate renders authored ready and error states", async () => {
+  const ready = new FlowCollectionGate();
+  ready.innerHTML =
+    "<p data-collection-waiting>Loading</p><template><p data-ready>Ready</p></template>";
+  ready.renderReady();
+  assert(ready.hasAttribute("ready"), "ready state was not set");
+  assert(ready.querySelector("[data-ready]"), "ready template was not rendered");
+  assert(ready.querySelector("[data-collection-waiting]").hidden, "loading state stayed visible");
+
+  const failed = new FlowCollectionGate();
+  failed.innerHTML =
+    "<p data-collection-waiting>Loading</p><template>Ready</template><template data-error-template><p data-failed>Failed</p></template>";
+  failed.renderError();
+  assert(failed.hasAttribute("error"), "error state was not set");
+  assert(failed.querySelector("[data-failed]"), "error template was not rendered");
 });
 
 await test("missing version context reports a filtering failure", async () => {

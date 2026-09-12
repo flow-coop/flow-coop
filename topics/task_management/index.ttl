@@ -1,11 +1,11 @@
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix schema: <https://schema.org/>.
 
-<./> prov:wasGeneratedBy <#migration>.
+<https://flowcoop.eu/topics/task_management/> prov:wasGeneratedBy <#migration>.
 
 <#migration> a prov:Activity;
     schema:name "Migrate the task management draft to Flow UI";
-    prov:generated <./>;
+    prov:generated <https://flowcoop.eu/topics/task_management/>;
     prov:used
         <https://flow.solidcommunity.net/topics/task_management/history/draft/>,
         <https://mastodon.social/users/jg10/statuses/117116262041398775>,

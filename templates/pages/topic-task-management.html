@@ -1,6 +1,6 @@
 <flow-version-context
   uri="https://flowcoop.eu/topics/task_management/"
-  provenance-uri="https://flowcoop.eu/topics/task_management/index.ttl"
+  provenance-uri="/topics/task_management/index.ttl"
 >
   <main class="flow-topic-shell">
     <p class="flow-loading-state" data-version-loading hidden>Loading page data...</p>
@@ -83,18 +83,34 @@
           </template>
         </pos-case>
       </pos-switch>
-      <import-html src="/templates/discussion/section.html">
-        <p class="flow-loading-state" data-template-loading>Loading discussion...</p>
-        <template data-error-template>
-          <p class="flow-error-state" role="alert">Discussion could not be loaded.</p>
+      <flow-collection-gate>
+        <import-html src="/templates/discussion/section.html">
+          <p class="flow-loading-state" data-template-loading>Loading discussion...</p>
+          <template data-error-template>
+            <p class="flow-error-state" role="alert">Discussion could not be loaded.</p>
+          </template>
+        </import-html>
+        <p class="flow-loading-state" data-collection-waiting>
+          Loading change history...
+        </p>
+        <template>
+          <pos-resource uri="https://flowcoop.eu/topics/task_management/">
+            <import-html src="/templates/changes.html">
+              <p class="flow-loading-state" data-template-loading>Loading changes...</p>
+              <template data-error-template>
+                <p class="flow-error-state" role="alert">
+                  Changes could not be loaded.
+                </p>
+              </template>
+            </import-html>
+          </pos-resource>
         </template>
-      </import-html>
+        <template data-error-template>
+          <p class="flow-error-state" role="alert">
+            Changes could not be loaded because the discussion data is unavailable.
+          </p>
+        </template>
+      </flow-collection-gate>
     </pos-resource>
-    <import-html src="/templates/changes.html">
-      <p class="flow-loading-state" data-template-loading>Loading changes...</p>
-      <template data-error-template>
-        <p class="flow-error-state" role="alert">Changes could not be loaded.</p>
-      </template>
-    </import-html>
   </main>
 </flow-version-context>

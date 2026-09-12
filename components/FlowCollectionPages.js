@@ -63,6 +63,7 @@ export function noteUrisForItem(store, itemUri) {
  * @attr {number} max-pages - Pagination limit, capped at 50.
  * @dependency Inherits an ActivityStreams collection and OS store through PodOS.
  * @slot - A direct item template plus authored state and item containers.
+ * @fires flow:collection-ready - Reports that a page's Note graph is available.
  * @fires flow:error - Codes include `invalid-collection`,
  * `collection-load-failed`, and `descendant-filter-failed`.
  * @example <flow-collection-pages max-pages="10"><template></template><div data-items></div></flow-collection-pages>
@@ -195,6 +196,15 @@ export class FlowCollectionPages extends ReceiveResourceOS {
       this.updateControls();
       this.updateEmptyState();
       this.updateStateMessages();
+      this.dispatchEvent(
+        new CustomEvent("flow:collection-ready", {
+          bubbles: true,
+          detail: {
+            collectionUri: this.resource?.uri,
+            noteUris: [...this._loadedNotes],
+          },
+        }),
+      );
     } catch (error) {
       if (generation !== this._generation) return;
       this.removeAttribute("loading-page");
