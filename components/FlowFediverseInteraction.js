@@ -134,6 +134,16 @@ function matchingSubject(actual, account) {
   return actual.toLowerCase() === account.resource.toLowerCase();
 }
 
+/**
+ * Connects a PodOS RDF resource to a WebFinger-advertised Fediverse action.
+ *
+ * @customElement flow-fediverse-interaction
+ * @attr {string} mode - `contribute` for a topic actor or `reply` for a Note.
+ * @dependency Inherits an actor or Note resource and OS store through PodOS.
+ * @slot - Authored trigger, dialog, states, fallbacks, and error messages.
+ * @fires flow:error - Codes cover validation, discovery, safety, and clipboard errors.
+ * @example <flow-fediverse-interaction mode="reply"><button data-trigger>Reply</button></flow-fediverse-interaction>
+ */
 export class FlowFediverseInteraction extends ReceiveResourceOS {
   connectedCallback() {
     super.connectedCallback();

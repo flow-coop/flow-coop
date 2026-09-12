@@ -1,5 +1,17 @@
 import { ReceiveResourceOS } from "./ReceiveResourceOS.js";
 
+/**
+ * Renders its direct template only when the inherited RDF resource is unused.
+ *
+ * @customElement flow-if-open
+ * @attr {string} uri - Optional resource URI overriding the PodOS resource.
+ * @dependency Inherits its Note resource through PodOS and requires an ancestor
+ * `flow-version-context`.
+ * @slot - A direct template containing the content rendered for an open item.
+ * @fires flow:open-state - Reports whether the resource is open or failed.
+ * @fires flow:error - Reports missing version context and evaluation failures.
+ * @example <flow-if-open uri="https://example.test/note"><template>Open</template></flow-if-open>
+ */
 export class FlowIfOpen extends ReceiveResourceOS {
   constructor() {
     super();
@@ -59,9 +71,19 @@ export class FlowIfOpen extends ReceiveResourceOS {
       this.setAttribute("error", "");
       this.clearRenderedNodes();
       this.dispatchEvent(
+        new CustomEvent("flow:open-state", {
+          bubbles: true,
+          detail: { uri: resourceUri, open: false, error },
+        }),
+      );
+      this.dispatchEvent(
         new CustomEvent("flow:error", {
           bubbles: true,
-          detail: { component: "flow-if-open", error },
+          detail: {
+            component: "flow-if-open",
+            code: "version-context-unavailable",
+            error,
+          },
         }),
       );
     }

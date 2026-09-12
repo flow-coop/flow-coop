@@ -1,0 +1,44 @@
+<pos-switch>
+  <pos-case
+    if-property="https://flowcoop.eu/templates/discussion/terms#outbox"
+  >
+    <template>
+      <section class="flow-discussion">
+        <pos-list
+          rel="https://flowcoop.eu/templates/discussion/terms#actor"
+          fetch
+        >
+          <template>
+            <import-html src="/templates/discussion/header.html">
+              <p class="flow-loading-state" data-template-loading>
+                Loading discussion controls...
+              </p>
+              <template data-error-template>
+                <p class="flow-error-state" role="alert">
+                  Discussion controls could not be loaded.
+                </p>
+              </template>
+            </import-html>
+          </template>
+        </pos-list>
+        <pos-list
+          rel="https://flowcoop.eu/templates/discussion/terms#outbox"
+          fetch
+        >
+          <template>
+            <import-html src="/templates/discussion/outbox.html">
+              <p class="flow-loading-state" data-template-loading>
+                Loading discussion...
+              </p>
+              <template data-error-template>
+                <p class="flow-error-state" role="alert">
+                  Discussion could not be loaded. Try again.
+                </p>
+              </template>
+            </import-html>
+          </template>
+        </pos-list>
+      </section>
+    </template>
+  </pos-case>
+</pos-switch>
