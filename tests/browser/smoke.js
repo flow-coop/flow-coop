@@ -26,12 +26,29 @@ const openTaskNotes = [
   "117211984867595038",
   "117223553798307518",
 ];
+const AS_ATTRIBUTED_TO = "https://www.w3.org/ns/activitystreams#attributedTo";
+const AS_CONTENT = "https://www.w3.org/ns/activitystreams#content";
+const AS_NOTE = "https://www.w3.org/ns/activitystreams#Note";
+const AS_PUBLISHED = "https://www.w3.org/ns/activitystreams#published";
+const PROV_USED = "http://www.w3.org/ns/prov#used";
+const SCHEMA_NAME = "https://schema.org/name";
+const taskMigrationActivity =
+  "https://flowcoop.eu/topics/task_management/index.ttl#migration";
+const previousTaskVersion =
+  "https://flow.solidcommunity.net/topics/task_management/history/draft/";
 const results = document.querySelector("#results");
 let failures = 0;
 const failureMessages = [];
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function relationUris(store, subjectUri, predicate) {
+  return store
+    .get(subjectUri)
+    .relations(predicate)
+    .flatMap(relation => relation.uris);
 }
 
 async function waitFor(check, label, timeout = 60_000) {
@@ -63,10 +80,15 @@ async function loadRoute(route, width) {
     () => doc.querySelector("pos-router > pos-resource > import-html[ready]"),
     "page template",
   );
-  await waitFor(
-    () => route.text.every(value => doc.body.innerText.includes(value)),
-    "visible content",
-  );
+  try {
+    await waitFor(
+      () => route.text.every(value => doc.body.innerText.includes(value)),
+      "visible content",
+    );
+  } catch {
+    const missing = route.text.filter(value => !doc.body.innerText.includes(value));
+    throw new Error(`visible content missing: ${missing.join(", ")}`);
+  }
   if (route.discussion) {
     await waitFor(() => {
       const collection = doc.querySelector("flow-collection-pages");
@@ -80,7 +102,11 @@ async function loadRoute(route, width) {
   }
   if (route.taskHistory) {
     await waitFor(
-      () => doc.querySelectorAll("flow-if-open[open], flow-if-open[closed]").length === 13,
+      () => [...incorporatedTaskNotes, ...openTaskNotes].every(id =>
+        doc.querySelector(
+          `flow-if-open[uri$="${id}"][open], flow-if-open[uri$="${id}"][closed]`,
+        ),
+      ),
       "task discussion filtering",
     );
     await waitFor(
@@ -99,11 +125,63 @@ async function loadRoute(route, width) {
     for (const id of openTaskNotes) {
       if (stateFor(id) !== "open") throw new Error(`${id} was not left open`);
     }
-    if (doc.querySelectorAll(".flow-comment-list .flow-comment-card").length !== 5) {
-      throw new Error("open discussion does not contain exactly five comments");
+    for (const item of doc.querySelectorAll("flow-if-open[uri]")) {
+      const id = incorporatedTaskNotes.find(value =>
+        item.getAttribute("uri").endsWith(value),
+      );
+      if (!id && !item.hasAttribute("open")) {
+        throw new Error(`${item.getAttribute("uri")} was not left open`);
+      }
+    }
+    if (doc.querySelectorAll(".flow-comment-list .flow-comment-card").length < 5) {
+      throw new Error("known open discussion comments are missing");
     }
     if (doc.querySelectorAll(".flow-change-inputs-title").length !== 1) {
       throw new Error("incorporated content heading was repeated");
+    }
+    if (doc.querySelectorAll(".flow-change-resource").length !== 1) {
+      throw new Error("previous version input was not rendered once");
+    }
+
+    const context = doc.querySelector("flow-version-context");
+    const store = context?.os?.store;
+    if (!store) throw new Error("PodOS store is unavailable");
+    const inputs = relationUris(store, taskMigrationActivity, PROV_USED);
+    const noteInputs = inputs.filter(uri =>
+      store.get(uri).types().some(type => type.uri === AS_NOTE),
+    );
+    if (noteInputs.length !== 8 || new Set(noteInputs).size !== 8) {
+      throw new Error("current version does not contain eight unique Note snapshots");
+    }
+    if (!inputs.includes(previousTaskVersion)) {
+      throw new Error("previous task version input is missing");
+    }
+    for (const id of openTaskNotes) {
+      if (inputs.some(uri => uri.endsWith(id))) {
+        throw new Error(`${id} was incorrectly incorporated`);
+      }
+    }
+    for (const uri of noteInputs) {
+      const note = store.get(uri);
+      const actors = relationUris(store, uri, AS_ATTRIBUTED_TO);
+      if (!note.anyValue(AS_CONTENT)) throw new Error(`${uri} has no snapshot content`);
+      if (!note.anyValue(AS_PUBLISHED)) {
+        throw new Error(`${uri} has no publication time`);
+      }
+      if (actors.length === 0 || !store.get(actors[0]).anyValue(SCHEMA_NAME)) {
+        throw new Error(`${uri} has no labelled author`);
+      }
+    }
+    for (const link of doc.querySelectorAll(
+      ".flow-changes .flow-comment-card a[href]",
+    )) {
+      const url = new URL(link.href);
+      if (url.protocol !== "http:" && url.protocol !== "https:") {
+        throw new Error("incorporated content contains an unsafe link");
+      }
+      if (link.target === "_blank" && link.rel !== "noopener noreferrer") {
+        throw new Error("incorporated content link lacks isolation");
+      }
     }
   }
 
@@ -116,7 +194,7 @@ async function loadRoute(route, width) {
   if (doc.querySelector("import-html[error], [data-version-error]:not([hidden])")) {
     throw new Error("template or version context failed");
   }
-  const flowSelector = "flow-version-context, flow-collection-pages, flow-if-open, flow-sanitized-content, flow-fediverse-interaction";
+  const flowSelector = "flow-version-context, flow-version-ready, flow-collection-pages, flow-if-open, flow-sanitized-content, flow-fediverse-interaction";
   await waitFor(
     () => [...doc.querySelectorAll(flowSelector)].every(element =>
       frame.contentWindow.customElements.get(element.localName)),
@@ -136,6 +214,12 @@ async function loadRoute(route, width) {
     context.getAttribute("provenance-uri") !== "/topics/task_management/index.ttl"
   ) {
     throw new Error("task provenance does not use the tested page resource");
+  }
+  if (
+    route.taskHistory &&
+    context.getAttribute("activity-uri") !== taskMigrationActivity
+  ) {
+    throw new Error("task version does not select its migration activity");
   }
   const discussion = doc.querySelector(".flow-discussion");
   if (route.discussion) {
