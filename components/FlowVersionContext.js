@@ -19,24 +19,24 @@ async function activityUrisForVersion(store, versionUri, cache) {
   if (cache.has(versionUri)) return cache.get(versionUri);
 
   await store.fetch(versionUri);
-  let activityUris = relationUris(store, versionUri, PROV_WAS_GENERATED_BY);
-  const url = new URL(versionUri);
-  if (activityUris.length === 0 && url.pathname.endsWith("/")) {
-    await store.fetch(new URL("index.ttl", url).href);
-    activityUris = relationUris(store, versionUri, PROV_WAS_GENERATED_BY);
-  }
+  const activityUris = relationUris(store, versionUri, PROV_WAS_GENERATED_BY);
 
   cache.set(versionUri, activityUris);
   return activityUris;
 }
 
-export async function resolveVersionContext(os, versionUri) {
+export async function resolveVersionContext(os, versionUri, provenanceUris = []) {
   const usedUris = new Set();
   const directUsedUris = new Set();
   const activityUris = new Set();
   const visitedVersions = new Set();
   const versionActivities = new Map();
   const pendingVersions = [versionUri];
+
+  await os.store.fetch(versionUri);
+  for (const provenanceUri of provenanceUris) {
+    await os.store.fetch(provenanceUri);
+  }
 
   while (pendingVersions.length > 0) {
     if (visitedVersions.size >= MAX_VERSION_RESOURCES) {
@@ -89,7 +89,21 @@ export async function resolveVersionContext(os, versionUri) {
   };
 }
 
+/**
+ * Supplies provenance-derived version context to descendant Flow components.
+ *
+ * @customElement flow-version-context
+ * @attr {string} uri - Version resource; otherwise inherited from PodOS.
+ * @attr {string} provenance-uri - Explicit supplementary RDF metadata document.
+ * @dependency Inherits the current resource and OS store through PodOS events.
+ * @fires flow:version-ready - Provides the resolved version and used resources.
+ * @fires flow:error - Reports provenance fetch or traversal failures.
+ * @slot - Components that consume `flow:request-version-context`.
+ * @example <flow-version-context uri="https://example.test/topic/" provenance-uri="https://example.test/topic/index.ttl"></flow-version-context>
+ */
 export class FlowVersionContext extends ReceiveResourceOS {
+  static observedAttributes = ["provenance-uri", "uri"];
+
   constructor() {
     super();
     this._generation = 0;
@@ -121,6 +135,10 @@ export class FlowVersionContext extends ReceiveResourceOS {
     this._generation += 1;
   }
 
+  attributeChangedCallback() {
+    if (this.isConnected) this.update();
+  }
+
   update() {
     const versionUri = this.getAttribute("uri") || this.resource?.uri;
     if (!this.os || !versionUri) return false;
@@ -129,12 +147,20 @@ export class FlowVersionContext extends ReceiveResourceOS {
     this.removeAttribute("ready");
     this.removeAttribute("error");
     this.setAttribute("loading", "");
+    this.updateStateMessages();
 
-    this._contextPromise = resolveVersionContext(this.os, versionUri)
+    const provenanceUri = this.getAttribute("provenance-uri");
+    const provenanceUris = provenanceUri ? [new URL(provenanceUri, document.baseURI).href] : [];
+    this._contextPromise = resolveVersionContext(
+      this.os,
+      versionUri,
+      provenanceUris,
+    )
       .then((context) => {
         if (generation !== this._generation) return context;
         this.removeAttribute("loading");
         this.setAttribute("ready", "");
+        this.updateStateMessages();
         this.dispatchEvent(
           new CustomEvent("flow:version-ready", {
             bubbles: true,
@@ -154,12 +180,24 @@ export class FlowVersionContext extends ReceiveResourceOS {
   reportError(error) {
     this.removeAttribute("loading");
     this.setAttribute("error", "");
+    this.updateStateMessages();
     this.dispatchEvent(
       new CustomEvent("flow:error", {
         bubbles: true,
-        detail: { component: "flow-version-context", error },
+        detail: {
+          component: "flow-version-context",
+          code: "version-context-failed",
+          error,
+        },
       }),
     );
+  }
+
+  updateStateMessages() {
+    const loading = this.querySelector(":scope [data-version-loading]");
+    const error = this.querySelector(":scope [data-version-error]");
+    if (loading) loading.hidden = !this.hasAttribute("loading");
+    if (error) error.hidden = !this.hasAttribute("error");
   }
 }
 

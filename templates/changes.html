@@ -28,7 +28,7 @@
                 Content incorporated into this version
               </h3>
               <div class="flow-change-inputs">
-                <pos-list rel="http://www.w3.org/ns/prov#used">
+                <pos-list rel="http://www.w3.org/ns/prov#used" fetch>
                   <template>
                     <pos-switch>
                       <pos-case
@@ -37,7 +37,16 @@
                         <template>
                           <import-html
                             src="/templates/discussion/comment.html"
-                          ></import-html>
+                          >
+                            <p class="flow-loading-state" data-template-loading>
+                              Loading incorporated content...
+                            </p>
+                            <template data-error-template>
+                              <p class="flow-error-state" role="alert">
+                                Incorporated content could not be displayed.
+                              </p>
+                            </template>
+                          </import-html>
                         </template>
                       </pos-case>
                       <pos-case else>

@@ -1,6 +1,22 @@
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix schema: <https://schema.org/>.
 
+<./> prov:wasGeneratedBy <#migration>.
+
+<#migration> a prov:Activity;
+    schema:name "Migrate the task management draft to Flow UI";
+    prov:generated <./>;
+    prov:used
+        <https://flow.solidcommunity.net/topics/task_management/history/draft/>,
+        <https://mastodon.social/users/jg10/statuses/117116262041398775>,
+        <https://mastodon.social/users/jg10/statuses/117116293386353207>,
+        <https://mastodon.social/users/jg10/statuses/117116304491150823>,
+        <https://mastodon.social/users/jg10/statuses/117133369969380514>,
+        <https://mastodon.social/users/jg10/statuses/117133374863355352>,
+        <https://mastodon.social/users/jg10/statuses/117133378229611560>,
+        <https://mastodon.social/users/jg10/statuses/117133392772393654>,
+        <https://mastodon.social/users/jg10/statuses/117133425566377347>.
+
 <#it> <https://schema.org/name> "Task management";
     <https://schema.org/description> "When managing tasks, flows can support you in controlling or coordinating a set of activities and their outcomes.";
     <https://flowcoop.eu/topics/task_management/index.ttl#flows> <#task_manager>, <#booking_appointments>, <#kanban>, <#event_reminders>;
