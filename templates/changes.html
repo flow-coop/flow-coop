@@ -3,31 +3,37 @@
   <pos-switch>
     <pos-case if-property="http://www.w3.org/ns/prov#wasGeneratedBy">
       <template>
-        <pos-list rel="http://www.w3.org/ns/prov#wasGeneratedBy" fetch>
-          <template>
-            <section class="flow-change-group">
-              <article class="flow-change-card">
-                <h3>Activity: <pos-label></pos-label></h3>
-                <dl class="flow-change-metadata">
-                  <div>
-                    <dt>Source activity</dt>
-                    <dd><pos-rich-link>Open source activity</pos-rich-link></dd>
-                  </div>
-                  <div>
-                    <dt>Generated resource</dt>
-                    <dd>
-                      <pos-list rel="http://www.w3.org/ns/prov#generated">
-                        <template><pos-rich-link></pos-rich-link></template>
-                      </pos-list>
-                    </dd>
-                  </div>
-                </dl>
-              </article>
+        <section class="flow-change-group">
+          <div class="flow-change-activities">
+            <pos-list rel="http://www.w3.org/ns/prov#wasGeneratedBy" fetch>
+              <template>
+                <article class="flow-change-card">
+                  <h3>Activity: <pos-label></pos-label></h3>
+                  <dl class="flow-change-metadata">
+                    <div>
+                      <dt>Source activity</dt>
+                      <dd><pos-rich-link>Open source activity</pos-rich-link></dd>
+                    </div>
+                    <div>
+                      <dt>Generated resource</dt>
+                      <dd>
+                        <pos-list rel="http://www.w3.org/ns/prov#generated">
+                          <template><pos-rich-link></pos-rich-link></template>
+                        </pos-list>
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              </template>
+            </pos-list>
+          </div>
 
-              <h3 class="flow-change-inputs-title">
-                Content incorporated into this version
-              </h3>
-              <div class="flow-change-inputs">
+          <h3 class="flow-change-inputs-title">
+            Content incorporated into this version
+          </h3>
+          <div class="flow-change-inputs">
+            <pos-list rel="http://www.w3.org/ns/prov#wasGeneratedBy" fetch>
+              <template>
                 <pos-list rel="http://www.w3.org/ns/prov#used">
                   <template>
                     <pos-switch>
@@ -60,10 +66,10 @@
                     </pos-switch>
                   </template>
                 </pos-list>
-              </div>
-            </section>
-          </template>
-        </pos-list>
+              </template>
+            </pos-list>
+          </div>
+        </section>
       </template>
     </pos-case>
     <pos-case else>

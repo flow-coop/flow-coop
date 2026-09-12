@@ -102,6 +102,9 @@ async function loadRoute(route, width) {
     if (doc.querySelectorAll(".flow-comment-list .flow-comment-card").length !== 5) {
       throw new Error("open discussion does not contain exactly five comments");
     }
+    if (doc.querySelectorAll(".flow-change-inputs-title").length !== 1) {
+      throw new Error("incorporated content heading was repeated");
+    }
   }
 
   const shellScripts = [...doc.querySelectorAll("head > script[src]")];

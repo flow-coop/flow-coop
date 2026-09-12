@@ -168,7 +168,8 @@ flow-if-open { display: contents; }
 flow-fediverse-interaction[copied] .flow-interaction-copied { display: block; }
 
 .flow-comment-list,
-.flow-change-inputs > pos-list { display: grid; gap: 1rem; }
+.flow-change-activities > pos-list,
+.flow-change-inputs pos-list { display: grid; gap: 1rem; }
 .flow-comment-card {
   width: 100%;
   margin: 0;
