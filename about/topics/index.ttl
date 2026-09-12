@@ -5,7 +5,4 @@
     <https://flowcoop.eu/templates/discussion/terms#outbox> <https://flow-coop.netlify.app/flow_topics/outbox/>;
     <https://flowcoop.eu/about/topics/index.ttl#proposed> <#agency>
     .
-    <./> 
-<http://mementoweb.org/ns#original> <https://flowcoop.eu/about/topics/>;
-prov:wasGeneratedBy <https://flowcoop.eu/about/topics/history/changelog/1.ttl#2>.
 <#agency> schema:name "Agency".
