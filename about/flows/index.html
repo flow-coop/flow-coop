@@ -1,86 +1,26 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <title>Flows - About Flow</title>
-    <script
-      src="https://cdn.jsdelivr.net/npm/eruda"
-      onload="eruda.init()"
-    ></script>
-    <link
-      href="https://cdn.jsdelivr.net/npm/@ionic/core/css/palettes/dark.system.css"
-      rel="stylesheet"
-    />
-    <meta name="color-scheme" content="dark light" />
-    <script
-      type="module"
-      src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"
-    ></script>
-    <script
-      nomodule=""
-      src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"
-    ></script>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css"
-    />
-    <script
-      type="module"
-      src="https://cdn.jsdelivr.net/npm/@pod-os/elements/dist/elements/elements.esm.js"
-    ></script>
-    <link
-      href="https://cdn.jsdelivr.net/npm/@pod-os/elements/dist/elements/elements.css"
-      rel="stylesheet"
-    />
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.simplecss.org; connect-src 'self' https:; img-src 'self' data: https:; font-src 'self' data: https:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css" />
-    <script src="/templates/ImportHtml.js" defer></script>
-    <script src="/templates/update-location.js"></script>
+    <meta name="color-scheme" content="dark light" />
+    <title>Flows - About Flow</title>
+    <link rel="stylesheet" href="/styles/site.css" />
+    <script type="module" src="/components/load.js"></script>
   </head>
   <body>
     <ion-content>
       <pos-app>
         <pos-router mode="pod">
-          <h1>About Flow: Flows</h1>
-          <p>
-            Flows involve interactions with data that provide value to co-op
-            members. Flows are connected through
-            <a href="/about/topics/">topics</a> and are implemented through one
-            or more <a href="/about/tools/">tools</a>.
-          </p>
-          <p>
-            Pages about flows can be subscribed to, and you can join the
-            discussion using an ActivityPub client, e.g. Mastodon.
-          </p>
-          <p>
-            A flow might be implemented as an app, a data import or export, or
-            an agent.
-          </p>
-          <p>
-            A flow is an action on data that should be described at a level a
-            user can understand. It has to be something that they are able to
-            make a decision to turn on/off, use or not use.
-          </p>
-          <h2>Existing flows</h2>
-          <ul>
-            <pos-resource uri="https://flowcoop.eu/flows/">
-              <pos-list rel="http://www.w3.org/ns/ldp#contains">
-                <template>
-                  <li>
-                    <pos-rich-link><pos-label></pos-label></pos-rich-link>
-                  </li>
-                </template>
-              </pos-list>
-            </pos-resource>
-          </ul>
-          <pos-resource
-            uri="https://flowcoop.eu/about/flows/index.ttl#it"
-          >
-            <import-html src="/templates/discussion/header.html"></import-html>
-            <import-html src="/templates/discussion/outbox.html"></import-html>
-          </pos-resource>
           <pos-resource uri="https://flowcoop.eu/about/flows/">
-            <import-html src="/templates/changes.html"></import-html>
+            <import-html src="/templates/pages/about-flows.html">
+              <p class="flow-loading-state" data-template-loading>Loading page...</p>
+              <template data-error-template><p class="flow-error-state" role="alert">Page content could not be loaded.</p></template>
+            </import-html>
           </pos-resource>
-        </pos-router> </pos-app
-    ></ion-content>
+        </pos-router>
+      </pos-app>
+    </ion-content>
+  </body>
 </html>

@@ -1,0 +1,59 @@
+<flow-version-context
+  uri="https://flowcoop.eu/"
+  provenance-uri="https://flowcoop.eu/index.ttl"
+>
+  <main class="flow-site-shell">
+    <p class="flow-loading-state" data-version-loading hidden>Loading page data...</p>
+    <p class="flow-error-state" data-version-error hidden role="alert">Page data could not be loaded.</p>
+    <h1>Flow coop</h1>
+    <p>
+      This is the WIP home of the Flow coop, a cooperative building hosting and
+      services where your data flows work for you.
+    </p>
+    <p>It currently hosts discussion pages for data flows.</p>
+    <p>Note: This site is still experimental.</p>
+    <p>
+      The Flow Coop provides a high quality service you would feel comfortable
+      recommending to family and friends. Members work in the open. They
+      experiment to prove value, and plan sustainable investments in services
+      with operating expenses covered on a user-pays opt-in basis. Services are
+      implemented and maintained with high reliability, stability, and user
+      friendliness, putting user trust first.
+    </p>
+    <h2>About</h2>
+    <p>About the coop and this website.</p>
+    <ul>
+      <pos-resource uri="https://flowcoop.eu/about/">
+        <pos-list rel="http://www.w3.org/ns/ldp#contains">
+          <template>
+            <li><pos-rich-link><pos-label></pos-label></pos-rich-link></li>
+          </template>
+        </pos-list>
+      </pos-resource>
+    </ul>
+    <h2>Topics</h2>
+    <p>
+      Topic pages provide a flexible infrastructure to describe data flows of
+      value to co-op members and how they are connected.
+    </p>
+    <ul>
+      <pos-resource uri="https://flowcoop.eu/topics/">
+        <pos-list rel="http://www.w3.org/ns/ldp#contains">
+          <template>
+            <li><pos-rich-link><pos-label></pos-label></pos-rich-link></li>
+          </template>
+        </pos-list>
+      </pos-resource>
+    </ul>
+    <pos-resource uri="https://flowcoop.eu/index.ttl#it">
+      <import-html src="/templates/discussion/section.html">
+        <p class="flow-loading-state" data-template-loading>Loading discussion...</p>
+        <template data-error-template>
+          <p class="flow-error-state" role="alert">
+            Discussion could not be loaded. Try again.
+          </p>
+        </template>
+      </import-html>
+    </pos-resource>
+  </main>
+</flow-version-context>

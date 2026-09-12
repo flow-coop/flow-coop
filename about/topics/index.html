@@ -1,116 +1,26 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <title>Topics - About Flow</title>
-    <script
-      src="https://cdn.jsdelivr.net/npm/eruda"
-      onload="eruda.init()"
-    ></script>
-    <link
-      href="https://cdn.jsdelivr.net/npm/@ionic/core/css/palettes/dark.system.css"
-      rel="stylesheet"
-    />
-    <meta name="color-scheme" content="dark light" />
-    <script
-      type="module"
-      src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"
-    ></script>
-    <script
-      nomodule=""
-      src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"
-    ></script>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css"
-    />
-    <script
-      type="module"
-      src="https://cdn.jsdelivr.net/npm/@pod-os/elements/dist/elements/elements.esm.js"
-    ></script>
-    <link
-      href="https://cdn.jsdelivr.net/npm/@pod-os/elements/dist/elements/elements.css"
-      rel="stylesheet"
-    />
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.simplecss.org; connect-src 'self' https:; img-src 'self' data: https:; font-src 'self' data: https:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css" />
-    <script
-      type="module"
-      src="/components/ImportHtml.js?version=20260905-3"
-    ></script>
-    <script type="module" src="/components/FlowVersionContext.js"></script>
-    <script type="module" src="/components/FlowIfOpen.js"></script>
-    <script type="module" src="/components/FlowCollectionPages.js"></script>
-    <script type="module" src="/components/FlowSanitizedContent.js"></script>
-    <script
-      type="module"
-      src="/components/FlowFediverseInteraction.js"
-    ></script>
-    <script type="module" src="/components/UpdateLocation.js"></script>
+    <meta name="color-scheme" content="dark light" />
+    <title>Topics - About Flow</title>
+    <link rel="stylesheet" href="/styles/site.css" />
+    <script type="module" src="/components/load.js"></script>
   </head>
   <body>
     <ion-content>
       <pos-app>
         <pos-router mode="pod">
           <pos-resource uri="https://flowcoop.eu/about/topics/">
-            <import-html
-              src="https://flowcoop.eu/templates/versions/status.html"
-            ></import-html>
+            <import-html src="/templates/pages/about-topics.html">
+              <p class="flow-loading-state" data-template-loading>Loading page...</p>
+              <template data-error-template><p class="flow-error-state" role="alert">Page content could not be loaded.</p></template>
+            </import-html>
           </pos-resource>
-          <h1>About Flow: Topics</h1>
-          <p>
-            Topic pages provide a flexible infrastructure to describe data flows
-            of value to co-op members and how they are connected.
-          </p>
-          <p>
-            Topics can be subscribed to, and you can join the discussion using
-            an ActivityPub client, e.g. Mastodon.
-          </p>
-          <p>
-            A good topic page describes a broad enough concept that benefits
-            from discussion and elaboration over time. It should be associated
-            with more than one possible data flow and relationships with other
-            topics should be explored before creating it.
-          </p>
-          <p>
-            New topics can be proposed. They are created if they are aligned
-            with the co-op's mission and a commitment is made by two coop
-            members to active moderation and curation. Pages with fewer than two
-            active curators are marked as under consideration for mothballing.
-            On a regular basis, pages are reviewed and marked as inactive with
-            content marked as read-only and interactions limited.
-          </p>
-          <h2>Existing topics</h2>
-          <ul>
-            <pos-resource uri="https://flowcoop.eu/topics/">
-              <pos-list rel="http://www.w3.org/ns/ldp#contains">
-                <template>
-                  <li>
-                    <pos-rich-link><pos-label></pos-label></pos-rich-link>
-                  </li>
-                </template>
-              </pos-list>
-            </pos-resource>
-          </ul>
-          <pos-resource uri="https://flowcoop.eu/about/topics/index.ttl#it">
-            <h2>Proposed topics</h2>
-            <ul>
-              <pos-list
-                rel="https://flowcoop.eu/about/topics/index.ttl#proposed"
-              >
-                <template>
-                  <li>
-                    <pos-rich-link><pos-label></pos-label></pos-rich-link>
-                  </li>
-                </template>
-              </pos-list>
-            </ul>
-            <import-html src="/templates/discussion/header.html"></import-html>
-            <import-html src="/templates/discussion/outbox.html"></import-html>
-          </pos-resource>
-          <pos-resource uri="https://flowcoop.eu/about/topics/">
-            <import-html src="/templates/changes.html"></import-html>
-          </pos-resource>
-        </pos-router> </pos-app
-    ></ion-content>
+        </pos-router>
+      </pos-app>
+    </ion-content>
   </body>
 </html>

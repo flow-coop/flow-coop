@@ -1,0 +1,30 @@
+<flow-version-context
+  uri="https://flowcoop.eu/about/tools/"
+  provenance-uri="https://flowcoop.eu/about/tools/index.ttl"
+>
+  <main class="flow-site-shell">
+    <p class="flow-loading-state" data-version-loading hidden>Loading page data...</p>
+    <p class="flow-error-state" data-version-error hidden role="alert">Page data could not be loaded.</p>
+    <import-html src="/templates/versions/status.html">
+      <p class="flow-loading-state" data-template-loading>Loading version status...</p>
+      <template data-error-template>
+        <p class="flow-error-state" role="alert">Version status could not be loaded.</p>
+      </template>
+    </import-html>
+    <h1>About Flow: Tools</h1>
+    <pos-resource uri="https://flowcoop.eu/about/tools/index.ttl#it">
+      <import-html src="/templates/discussion/section.html">
+        <p class="flow-loading-state" data-template-loading>Loading discussion...</p>
+        <template data-error-template>
+          <p class="flow-error-state" role="alert">Discussion could not be loaded.</p>
+        </template>
+      </import-html>
+    </pos-resource>
+    <import-html src="/templates/changes.html">
+      <p class="flow-loading-state" data-template-loading>Loading changes...</p>
+      <template data-error-template>
+        <p class="flow-error-state" role="alert">Changes could not be loaded.</p>
+      </template>
+    </import-html>
+  </main>
+</flow-version-context>
