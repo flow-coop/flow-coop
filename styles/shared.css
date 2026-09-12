@@ -60,6 +60,7 @@ pos-router {
 }
 
 flow-version-context,
+flow-version-ready,
 flow-collection-pages,
 flow-sanitized-content,
 flow-fediverse-interaction,

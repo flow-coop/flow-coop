@@ -1,0 +1,56 @@
+<details class="flow-changes" open>
+  <summary>Changes</summary>
+  <section class="flow-change-group">
+    <article class="flow-change-card">
+      <h3>Activity: <pos-label></pos-label></h3>
+      <dl class="flow-change-metadata">
+        <div>
+          <dt>Source activity</dt>
+          <dd><pos-rich-link>Open source activity</pos-rich-link></dd>
+        </div>
+        <div>
+          <dt>Generated resource</dt>
+          <dd>
+            <pos-list rel="http://www.w3.org/ns/prov#generated">
+              <template><pos-rich-link></pos-rich-link></template>
+            </pos-list>
+          </dd>
+        </div>
+      </dl>
+    </article>
+
+    <h3 class="flow-change-inputs-title">
+      Content incorporated into this version
+    </h3>
+    <div class="flow-change-inputs">
+      <pos-list rel="http://www.w3.org/ns/prov#used">
+        <template>
+          <pos-switch>
+            <pos-case if-typeof="https://www.w3.org/ns/activitystreams#Note">
+              <template>
+                <import-html src="/templates/discussion/comment.html">
+                  <p class="flow-loading-state" data-template-loading>
+                    Loading incorporated content...
+                  </p>
+                  <template data-error-template>
+                    <p class="flow-error-state" role="alert">
+                      Incorporated content could not be displayed.
+                    </p>
+                  </template>
+                </import-html>
+              </template>
+            </pos-case>
+            <pos-case else>
+              <template>
+                <article class="flow-change-resource">
+                  <h4>Previous version or source</h4>
+                  <pos-rich-link></pos-rich-link>
+                </article>
+              </template>
+            </pos-case>
+          </pos-switch>
+        </template>
+      </pos-list>
+    </div>
+  </section>
+</details>

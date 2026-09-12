@@ -25,7 +25,12 @@ async function activityUrisForVersion(store, versionUri, cache) {
   return activityUris;
 }
 
-export async function resolveVersionContext(os, versionUri, provenanceUris = []) {
+export async function resolveVersionContext(
+  os,
+  versionUri,
+  provenanceUris = [],
+  directActivityUris = null,
+) {
   const usedUris = new Set();
   const directUsedUris = new Set();
   const activityUris = new Set();
@@ -49,11 +54,14 @@ export async function resolveVersionContext(os, versionUri, provenanceUris = [])
     if (visitedVersions.has(currentVersion)) continue;
     visitedVersions.add(currentVersion);
 
-    const generatedBy = await activityUrisForVersion(
-      os.store,
-      currentVersion,
-      versionActivities,
-    );
+    const generatedBy =
+      currentVersion === versionUri && directActivityUris
+        ? directActivityUris
+        : await activityUrisForVersion(
+            os.store,
+            currentVersion,
+            versionActivities,
+          );
 
     for (const activityUri of generatedBy) {
       activityUris.add(activityUri);
@@ -93,6 +101,7 @@ export async function resolveVersionContext(os, versionUri, provenanceUris = [])
  * Supplies provenance-derived version context to descendant Flow components.
  *
  * @customElement flow-version-context
+ * @attr {string} activity-uri - Explicit activity that generated this version.
  * @attr {string} uri - Version resource; otherwise inherited from PodOS.
  * @attr {string} provenance-uri - Explicit supplementary RDF metadata document.
  * @dependency Inherits the current resource and OS store through PodOS events.
@@ -102,7 +111,7 @@ export async function resolveVersionContext(os, versionUri, provenanceUris = [])
  * @example <flow-version-context uri="https://example.test/topic/" provenance-uri="https://example.test/topic/index.ttl"></flow-version-context>
  */
 export class FlowVersionContext extends ReceiveResourceOS {
-  static observedAttributes = ["provenance-uri", "uri"];
+  static observedAttributes = ["activity-uri", "provenance-uri", "uri"];
 
   constructor() {
     super();
@@ -151,10 +160,15 @@ export class FlowVersionContext extends ReceiveResourceOS {
 
     const provenanceUri = this.getAttribute("provenance-uri");
     const provenanceUris = provenanceUri ? [new URL(provenanceUri, document.baseURI).href] : [];
+    const activityUri = this.getAttribute("activity-uri");
+    const directActivityUris = activityUri
+      ? [new URL(activityUri, document.baseURI).href]
+      : null;
     this._contextPromise = resolveVersionContext(
       this.os,
       versionUri,
       provenanceUris,
+      directActivityUris,
     )
       .then((context) => {
         if (generation !== this._generation) return context;

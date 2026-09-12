@@ -3,9 +3,10 @@
 @prefix schema: <https://schema.org/>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-<https://flowcoop.eu/topics/task_management/> prov:wasGeneratedBy <#migration>.
+<https://flowcoop.eu/topics/task_management/>
+    prov:wasGeneratedBy <https://flowcoop.eu/topics/task_management/index.ttl#migration>.
 
-<#migration> a prov:Activity;
+<https://flowcoop.eu/topics/task_management/index.ttl#migration> a prov:Activity;
     schema:name "Migrate the task management draft to Flow UI";
     prov:generated <https://flowcoop.eu/topics/task_management/>;
     prov:used

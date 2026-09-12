@@ -116,7 +116,7 @@ async function loadRoute(route, width) {
   if (doc.querySelector("import-html[error], [data-version-error]:not([hidden])")) {
     throw new Error("template or version context failed");
   }
-  const flowSelector = "flow-version-context, flow-collection-gate, flow-collection-pages, flow-if-open, flow-sanitized-content, flow-fediverse-interaction";
+  const flowSelector = "flow-version-context, flow-collection-pages, flow-if-open, flow-sanitized-content, flow-fediverse-interaction";
   await waitFor(
     () => [...doc.querySelectorAll(flowSelector)].every(element =>
       frame.contentWindow.customElements.get(element.localName)),

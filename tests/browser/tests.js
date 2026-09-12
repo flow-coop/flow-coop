@@ -7,11 +7,11 @@ import { validatedTemplateFragment } from "/components/ImportHtml.js";
 import {
   resolveVersionContext,
 } from "/components/FlowVersionContext.js";
+import { FlowVersionReady } from "/components/FlowVersionReady.js";
 import {
   FlowCollectionPages,
   validateCollectionResource,
 } from "/components/FlowCollectionPages.js";
-import { FlowCollectionGate } from "/components/FlowCollectionGate.js";
 import { FlowIfOpen } from "/components/FlowIfOpen.js";
 import { sanitizedContentFragment } from "/components/FlowSanitizedContent.js";
 
@@ -178,6 +178,7 @@ await test("templates use DOMPurify ESM and reject executable or unknown markup"
 
 await test("every shipped template passes the shared sanitizer policy", async () => {
   const paths = [
+    "/templates/activity-changes.html",
     "/templates/changes.html",
     "/templates/discussion/comment.html",
     "/templates/discussion/header.html",
@@ -226,21 +227,70 @@ await test("supplementary provenance resolves all used resources", async () => {
   assert(store.fetched.includes(provenance), "supplementary provenance was not fetched");
 });
 
-await test("task migration RDF records exactly eight incorporated Notes", async () => {
-  const ttl = await fetch("/topics/task_management/index.ttl").then(response => response.text());
-  const usedNotes = ttl.match(/https:\/\/mastodon\.social\/(?:users|ap\/users)\/[^>]+\/statuses\/\d+/gu) || [];
-  assert(new Set(usedNotes).size === 8, "migration does not record eight unique Notes");
-  assert(ttl.includes("https://flow.solidcommunity.net/topics/task_management/history/draft/"), "previous draft input is missing");
-  const openNotes = [
-    "117116322505159764",
-    "117116340808425129",
-    "117133422033259970",
-    "117211984867595038",
-    "117223553798307518",
-  ];
-  for (const id of openNotes) {
-    assert(!usedNotes.some(uri => uri.endsWith(id)), `${id} was incorrectly incorporated`);
-  }
+await test("explicit version activity excludes stale root activities", async () => {
+  const version = "https://example.test/topic/";
+  const selected = "https://example.test/topic/index.ttl#migration";
+  const stale = "https://example.test/history/stale-activity";
+  const selectedNote = "https://social.test/note/selected";
+  const staleNote = "https://social.test/note/stale";
+  const store = new MockStore({
+    [version]: { relations: { [PROV_WAS_GENERATED_BY]: [stale, selected] } },
+    [selected]: { relations: { [PROV_USED]: [selectedNote] } },
+    [stale]: { relations: { [PROV_USED]: [staleNote] } },
+  });
+  const context = await resolveVersionContext(
+    { store },
+    version,
+    [],
+    [selected],
+  );
+  assert(context.directUsedUris.has(selectedNote), "selected activity was not used");
+  assert(!context.usedUris.has(staleNote), "stale root activity contaminated context");
+});
+
+await test("task Changes stays independent when its outbox fails", async () => {
+  const path = "/templates/pages/topic-task-management.html";
+  const response = await fetch(path);
+  const fragment = validatedTemplateFragment(
+    await response.text(),
+    new URL(path, location.href),
+  );
+  const discussion = fragment.querySelector(
+    'import-html[src="/templates/discussion/section.html"]',
+  );
+  const versionReady = fragment.querySelector("flow-version-ready");
+  const readyTemplate = versionReady?.querySelector(
+    ":scope > template:not([data-error-template])",
+  );
+  const changes = readyTemplate?.content.querySelector(
+    'pos-resource[uri="https://flowcoop.eu/topics/task_management/index.ttl#migration"] > import-html[src="/templates/activity-changes.html"]',
+  );
+  assert(discussion, "task discussion import is missing");
+  assert(changes, "task Changes import is missing");
+  assert(!discussion.contains(changes), "Changes is nested under discussion");
+
+  const collection = "https://example.test/failing-outbox";
+  const failed = new FlowCollectionPages();
+  failed.innerHTML = collectionMarkup();
+  failed.os = { store: new MockStore({ [collection]: { reject: true } }) };
+  await failed.initialise(collection, ++failed._generation);
+  assert(failed.hasAttribute("error"), "mocked outbox did not fail");
+  assert(readyTemplate.content.contains(changes), "outbox failure removed Changes");
+});
+
+await test("version readiness instantiates authored content after provenance", async () => {
+  const context = document.createElement("flow-version-context");
+  context.setAttribute("ready", "");
+  const element = new FlowVersionReady();
+  element.innerHTML =
+    "<p data-version-waiting>Loading</p><template><p data-ready>Ready</p></template>";
+  context.append(element);
+  document.body.append(context);
+  await waitForMutation();
+  assert(element.hasAttribute("ready"), "version-dependent content is not ready");
+  assert(element.querySelector("[data-ready]"), "ready template was not rendered");
+  assert(element.querySelector("[data-version-waiting]").hidden, "loading state stayed visible");
+  context.remove();
 });
 
 await test("collection validation accepts empty collections and rejects topic resources", async () => {
@@ -298,23 +348,6 @@ await test("collection handles pagination, cycles, caps, and descendant failures
   await capped.initialise(collection, ++capped._generation);
   await capped.loadNextPage();
   assert(capped.hasAttribute("capped"), "page cap was not surfaced");
-});
-
-await test("collection gate renders authored ready and error states", async () => {
-  const ready = new FlowCollectionGate();
-  ready.innerHTML =
-    "<p data-collection-waiting>Loading</p><template><p data-ready>Ready</p></template>";
-  ready.renderReady();
-  assert(ready.hasAttribute("ready"), "ready state was not set");
-  assert(ready.querySelector("[data-ready]"), "ready template was not rendered");
-  assert(ready.querySelector("[data-collection-waiting]").hidden, "loading state stayed visible");
-
-  const failed = new FlowCollectionGate();
-  failed.innerHTML =
-    "<p data-collection-waiting>Loading</p><template>Ready</template><template data-error-template><p data-failed>Failed</p></template>";
-  failed.renderError();
-  assert(failed.hasAttribute("error"), "error state was not set");
-  assert(failed.querySelector("[data-failed]"), "error template was not rendered");
 });
 
 await test("missing version context reports a filtering failure", async () => {

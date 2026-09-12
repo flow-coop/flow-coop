@@ -5,11 +5,6 @@ const commonAttributes = ["class", "hidden", "id", "role"];
  * Platform providers are bootstrapped eagerly; Flow modules are loaded on demand.
  */
 export const componentRegistry = Object.freeze({
-  "flow-collection-gate": {
-    provider: "flow",
-    module: "./FlowCollectionGate.js",
-    attributes: commonAttributes,
-  },
   "flow-collection-pages": {
     provider: "flow",
     module: "./FlowCollectionPages.js",
@@ -33,7 +28,12 @@ export const componentRegistry = Object.freeze({
   "flow-version-context": {
     provider: "flow",
     module: "./FlowVersionContext.js",
-    attributes: [...commonAttributes, "provenance-uri", "uri"],
+    attributes: [...commonAttributes, "activity-uri", "provenance-uri", "uri"],
+  },
+  "flow-version-ready": {
+    provider: "flow",
+    module: "./FlowVersionReady.js",
+    attributes: commonAttributes,
   },
   "import-html": {
     provider: "flow-bootstrap",
