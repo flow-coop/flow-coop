@@ -91,7 +91,10 @@ function collectionMarkup() {
     <p data-error hidden>Error</p>
     <p data-cycle hidden>Cycle</p>
     <p data-capped hidden>Capped</p>
-    <button data-load-more hidden>More</button>
+    <button data-load-more hidden>
+      <span data-load-more-label>More</span>
+      <span data-retry-label hidden>Retry</span>
+    </button>
   `;
 }
 
@@ -275,7 +278,33 @@ await test("task Changes stays independent when its outbox fails", async () => {
   failed.os = { store: new MockStore({ [collection]: { reject: true } }) };
   await failed.initialise(collection, ++failed._generation);
   assert(failed.hasAttribute("error"), "mocked outbox did not fail");
+  assert(!failed.querySelector("[data-error]").hidden, "outbox error stayed hidden");
+  assert(!failed.querySelector("[data-load-more]").hidden, "root retry stayed hidden");
+
+  failed.os.store.entries[collection] = { types: [AS_COLLECTION] };
+  failed._handleClick({ target: failed.querySelector("[data-load-more]") });
+  await waitForMutation();
+  await waitForMutation();
+  assert(failed.hasAttribute("ready"), "recovered outbox could not be retried");
   assert(readyTemplate.content.contains(changes), "outbox failure removed Changes");
+});
+
+await test("discussion relations instantiate before remote fetches", async () => {
+  const path = "/templates/discussion/section.html";
+  const response = await fetch(path);
+  const fragment = validatedTemplateFragment(
+    await response.text(),
+    new URL(path, location.href),
+  );
+  const sectionTemplate = fragment.querySelector("pos-case > template");
+  const actorList = sectionTemplate?.content.querySelector(
+    'pos-list[rel="https://flowcoop.eu/templates/discussion/terms#actor"]',
+  );
+  const outboxList = sectionTemplate?.content.querySelector(
+    'pos-list[rel="https://flowcoop.eu/templates/discussion/terms#outbox"]',
+  );
+  assert(actorList && !actorList.hasAttribute("fetch"), "actor controls wait on a remote fetch");
+  assert(outboxList && !outboxList.hasAttribute("fetch"), "collection waits on a duplicate remote fetch");
 });
 
 await test("version readiness instantiates authored content after provenance", async () => {

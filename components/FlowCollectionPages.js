@@ -77,13 +77,18 @@ export class FlowCollectionPages extends ReceiveResourceOS {
     this._openStates = new Map();
     this._renderedNodes = [];
     this._pendingPageUri = null;
+    this._collectionUri = null;
     this._initialisedKey = null;
     this._handleClick = event => {
       if (
         event.target instanceof Element &&
         event.target.closest("[data-load-more]")
       ) {
-        void this.loadNextPage();
+        if (this.hasAttribute("error") && !this._pendingPageUri) {
+          void this.initialise(this._collectionUri, ++this._generation);
+        } else {
+          void this.loadNextPage();
+        }
       }
     };
     this._handleOpenState = event => {
@@ -125,6 +130,7 @@ export class FlowCollectionPages extends ReceiveResourceOS {
   }
 
   async initialise(collectionUri, generation) {
+    this._collectionUri = collectionUri;
     this.reset();
     this.setAttribute("loading", "");
     this.updateStateMessages();
@@ -251,9 +257,15 @@ export class FlowCollectionPages extends ReceiveResourceOS {
   updateControls() {
     const button = this.querySelector(":scope > [data-load-more]");
     if (!button) return;
-    button.disabled = this.hasAttribute("loading-page");
-    button.hidden = !this._pendingPageUri;
-    button.toggleAttribute("data-retry", this.hasAttribute("error"));
+    const retrying = this.hasAttribute("error");
+    button.disabled =
+      this.hasAttribute("loading") || this.hasAttribute("loading-page");
+    button.hidden = !this._pendingPageUri && !(retrying && this._collectionUri);
+    button.toggleAttribute("data-retry", retrying);
+    const loadLabel = button.querySelector(":scope > [data-load-more-label]");
+    const retryLabel = button.querySelector(":scope > [data-retry-label]");
+    if (loadLabel) loadLabel.hidden = retrying;
+    if (retryLabel) retryLabel.hidden = !retrying;
   }
 
   updateEmptyState() {
