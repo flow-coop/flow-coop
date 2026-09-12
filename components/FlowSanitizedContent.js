@@ -1,4 +1,5 @@
 import { ReceiveResourceOS } from "./ReceiveResourceOS.js";
+import DOMPurify from "./vendor/DOMPurify-3.4.14.es.mjs";
 
 const ALLOWED_TAGS = [
   "p", "br", "span", "a", "strong", "em", "code", "ul", "ol", "li", "blockquote",
@@ -8,7 +9,11 @@ const ALLOWED_ATTR = ["href", "class", "translate", "title", "aria-label"];
 function isSafeHttpUrl(value, baseUri) {
   try {
     const url = new URL(value, baseUri);
-    return url.protocol === "http:" || url.protocol === "https:";
+    return (
+      (url.protocol === "http:" || url.protocol === "https:") &&
+      !url.username &&
+      !url.password
+    );
   } catch {
     return false;
   }
@@ -38,7 +43,27 @@ export function sanitizedContentFragment(html, baseUri, purifier) {
   return fragment;
 }
 
+/**
+ * Renders one RDF HTML literal through an explicit DOMPurify policy.
+ *
+ * @customElement flow-sanitized-content
+ * @attr {string} predicate - RDF predicate containing the rich-content literal.
+ * @dependency Inherits its RDF resource through PodOS and uses DOMPurify 3.4.14.
+ * @slot - A direct `template[data-error-template]` rendered after failure.
+ * @fires flow:error - Code `content-sanitization-failed`.
+ * @example <flow-sanitized-content predicate="https://www.w3.org/ns/activitystreams#content"></flow-sanitized-content>
+ */
 export class FlowSanitizedContent extends ReceiveResourceOS {
+  connectedCallback() {
+    if (!this._errorContent) {
+      const errorTemplate = this.querySelector(
+        ":scope > template[data-error-template]",
+      );
+      this._errorContent = errorTemplate?.content.cloneNode(true) || null;
+    }
+    super.connectedCallback();
+  }
+
   disconnectedCallback() {
     clearTimeout(this._osTimer);
   }
@@ -52,11 +77,9 @@ export class FlowSanitizedContent extends ReceiveResourceOS {
     }
 
     try {
-      const purifier = globalThis.DOMPurify;
-      if (!purifier?.sanitize) throw new Error("DOMPurify is not available.");
       const html = this.resource.anyValue(predicate) || "";
       this.replaceChildren(
-        sanitizedContentFragment(html, this.resource.uri, purifier),
+        sanitizedContentFragment(html, this.resource.uri, DOMPurify),
       );
       this.removeAttribute("error");
       this.setAttribute("ready", "");
@@ -70,11 +93,17 @@ export class FlowSanitizedContent extends ReceiveResourceOS {
   reportError(error) {
     this.removeAttribute("ready");
     this.setAttribute("error", "");
-    this.replaceChildren();
+    const errorContent = this._errorContent?.cloneNode(true);
+    if (errorContent) this.replaceChildren(errorContent);
+    else this.replaceChildren();
     this.dispatchEvent(
       new CustomEvent("flow:error", {
         bubbles: true,
-        detail: { component: "flow-sanitized-content", error },
+        detail: {
+          component: "flow-sanitized-content",
+          code: "content-sanitization-failed",
+          error,
+        },
       }),
     );
   }

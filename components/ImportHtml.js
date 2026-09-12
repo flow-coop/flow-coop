@@ -1,38 +1,36 @@
-const FORBIDDEN_ELEMENTS = [
-  "script", "iframe", "object", "embed", "base", "form", "svg", "math",
-  "meta[http-equiv]", "link",
-];
+import DOMPurify from "./vendor/DOMPurify-3.4.14.es.mjs";
+import {
+  componentRegistry,
+  isAllowedCustomAttribute,
+  trustedCustomElements,
+} from "./registry.js";
+
+const ALLOWED_NATIVE_ELEMENTS = new Set([
+  "a", "article", "blockquote", "br", "button", "code", "dd", "details",
+  "dialog", "div", "dl", "dt", "em", "footer", "h1", "h2", "h3", "h4",
+  "header", "input", "label", "li", "main", "ol", "p", "section", "span",
+  "strong", "summary", "template", "ul",
+]);
+const FORBIDDEN_ELEMENTS = new Set([
+  "audio", "base", "canvas", "embed", "form", "frame", "frameset", "iframe",
+  "link", "math", "meta", "object", "script", "source", "style", "svg",
+  "track", "video",
+]);
 const URL_ATTRIBUTES = new Set([
   "action", "formaction", "href", "poster", "src", "xlink:href",
 ]);
-const TRUSTED_CUSTOM_ELEMENTS = new Set([
-  "boost-component",
-  "flow-collection-pages",
-  "flow-fediverse-interaction",
-  "flow-if-open",
-  "flow-sanitized-content",
-  "flow-version-context",
-  "import-html",
-  "ion-badge",
-  "ion-button",
-  "ion-card",
-  "ion-card-content",
-  "ion-card-header",
-  "ion-card-subtitle",
-  "ion-chip",
-  "ion-list",
-  "pos-app",
-  "pos-case",
-  "pos-label",
-  "pos-list",
-  "pos-login",
-  "pos-rich-link",
-  "pos-router",
-  "pos-switch",
-  "pos-type-badges",
-  "pos-value",
-  "webid-resource",
+const CUSTOM_URL_ATTRIBUTES = new Set([
+  "if-property", "if-typeof", "predicate", "provenance-uri", "rel", "uri",
 ]);
+const GLOBAL_ATTRIBUTES = new Set(["class", "hidden", "id", "role", "title"]);
+const NATIVE_ATTRIBUTES = Object.freeze({
+  a: new Set(["href", "rel", "target"]),
+  button: new Set(["disabled", "type"]),
+  details: new Set(["open"]),
+  input: new Set([
+    "autocomplete", "disabled", "inputmode", "placeholder", "spellcheck", "type",
+  ]),
+});
 const TEMPLATE_REQUESTS = new Map();
 const REQUEST_ABORT_GRACE_MS = 250;
 
@@ -54,7 +52,11 @@ function safeUrl(value, sourceUrl) {
   if (normalized.startsWith("#")) return true;
   try {
     const url = new URL(value, sourceUrl);
-    return url.protocol === "http:" || url.protocol === "https:";
+    return (
+      (url.protocol === "http:" || url.protocol === "https:") &&
+      !url.username &&
+      !url.password
+    );
   } catch {
     return false;
   }
@@ -111,28 +113,50 @@ function releaseTemplate(url, subscriber) {
   }, REQUEST_ABORT_GRACE_MS);
 }
 
-export function validatedTemplateFragment(html, sourceUrl) {
+function allowedAttribute(element, name) {
+  if (
+    GLOBAL_ATTRIBUTES.has(name) ||
+    name.startsWith("aria-") ||
+    name.startsWith("data-")
+  ) {
+    return true;
+  }
+  if (element.localName.includes("-")) {
+    return isAllowedCustomAttribute(element.localName, name);
+  }
+  return NATIVE_ATTRIBUTES[element.localName]?.has(name) || false;
+}
+
+function elementsIn(fragment) {
+  const elements = [];
+  for (const element of fragment.querySelectorAll("*")) {
+    elements.push(element);
+    if (element.localName === "template") {
+      elements.push(...elementsIn(element.content));
+    }
+  }
+  return elements;
+}
+
+export function validatedTemplateFragment(html, sourceUrl, purifier = DOMPurify) {
   const template = document.createElement("template");
   template.innerHTML = html;
-  const forbidden = template.content.querySelector(FORBIDDEN_ELEMENTS.join(","));
-  if (forbidden) {
-    throw new Error(`Template contains forbidden <${forbidden.localName}>.`);
-  }
 
-  for (const element of template.content.querySelectorAll("*")) {
+  for (const element of elementsIn(template.content)) {
+    if (FORBIDDEN_ELEMENTS.has(element.localName)) {
+      throw new Error(`Template contains forbidden <${element.localName}>.`);
+    }
     if (
       element.localName.includes("-") &&
-      !TRUSTED_CUSTOM_ELEMENTS.has(element.localName)
+      !trustedCustomElements.has(element.localName)
     ) {
       throw new Error(`Template contains untrusted <${element.localName}>.`);
     }
     if (
-      element.localName === "style" &&
-      /(?:@import|url\s*\(|expression\s*\(|behavior\s*:)/iu.test(
-        element.textContent,
-      )
+      !element.localName.includes("-") &&
+      !ALLOWED_NATIVE_ELEMENTS.has(element.localName)
     ) {
-      throw new Error("Template contains unsafe stylesheet content.");
+      throw new Error(`Template contains unsupported <${element.localName}>.`);
     }
     for (const attribute of element.attributes) {
       const name = attribute.name.toLowerCase();
@@ -144,25 +168,51 @@ export function validatedTemplateFragment(html, sourceUrl) {
       ) {
         throw new Error(`Template contains forbidden ${attribute.name} attribute.`);
       }
-      if (
-        name === "style" &&
-        /(?:url|expression|behavior)\s*\(/iu.test(attribute.value)
-      ) {
-        throw new Error("Template contains an unsafe style attribute.");
+      if (!allowedAttribute(element, name)) {
+        throw new Error(
+          `Template contains unsupported ${attribute.name} on <${element.localName}>.`,
+        );
       }
-      if (URL_ATTRIBUTES.has(name) && !safeUrl(attribute.value, sourceUrl)) {
+      const isUrl =
+        URL_ATTRIBUTES.has(name) ||
+        (element.localName.includes("-") && CUSTOM_URL_ATTRIBUTES.has(name));
+      if (isUrl && !safeUrl(attribute.value, sourceUrl)) {
         throw new Error(`Template contains an unsafe ${attribute.name} URL.`);
       }
     }
   }
 
-  return template.content.cloneNode(true);
+  const customAttributes = Object.values(componentRegistry)
+    .flatMap(entry => entry.attributes);
+  return purifier.sanitize(html, {
+    ADD_ATTR: [...new Set(customAttributes)],
+    ADD_TAGS: [...trustedCustomElements],
+    ALLOWED_TAGS: [...ALLOWED_NATIVE_ELEMENTS, ...trustedCustomElements],
+    ALLOW_DATA_ATTR: true,
+    RETURN_DOM_FRAGMENT: true,
+  });
 }
 
+/**
+ * Fetches and sanitizes a same-origin declarative HTML template.
+ *
+ * @customElement import-html
+ * @attr {string} src - A same-origin URL below /templates/.
+ * @slot - A direct `template[data-error-template]` rendered after failure.
+ * @dependency DOMPurify 3.4.14 and the trusted component registry.
+ * @fires flow:error - Code `template-load-failed`; includes technical details.
+ * @example <import-html src="/templates/pages/home.html"><template data-error-template><p role="alert">Page unavailable.</p></template></import-html>
+ */
 export class ImportHtml extends HTMLElement {
   static observedAttributes = ["src"];
 
   connectedCallback() {
+    if (!this._errorContent) {
+      const errorTemplate = this.querySelector(
+        ":scope > template[data-error-template]",
+      );
+      this._errorContent = errorTemplate?.content.cloneNode(true) || null;
+    }
     void this.load();
   }
 
@@ -199,15 +249,17 @@ export class ImportHtml extends HTMLElement {
       this.removeAttribute("loading");
       this.removeAttribute("ready");
       this.setAttribute("error", "");
-      const message = document.createElement("p");
-      message.dataset.templateError = "";
-      message.setAttribute("role", "alert");
-      message.textContent = `Template unavailable: ${error.message}`;
-      this.replaceChildren(message);
+      const errorContent = this._errorContent?.cloneNode(true);
+      if (errorContent) this.replaceChildren(errorContent);
+      else this.replaceChildren();
       this.dispatchEvent(
         new CustomEvent("flow:error", {
           bubbles: true,
-          detail: { component: "import-html", error },
+          detail: {
+            component: "import-html",
+            code: "template-load-failed",
+            error,
+          },
         }),
       );
     }
