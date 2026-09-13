@@ -89,25 +89,11 @@
         </template>
       </import-html>
     </pos-resource>
-    <flow-version-ready>
-      <p class="flow-loading-state" data-version-waiting>Loading changes...</p>
-      <template>
-        <pos-resource
-          uri="https://flowcoop.eu/topics/task_management/index.ttl#migration"
-        >
-          <import-html src="/templates/activity-changes.html">
-            <p class="flow-loading-state" data-template-loading>Loading changes...</p>
-            <template data-error-template>
-              <p class="flow-error-state" role="alert">Changes could not be loaded.</p>
-            </template>
-          </import-html>
-        </pos-resource>
-      </template>
+    <import-html src="/templates/changes.html">
+      <p class="flow-loading-state" data-template-loading>Loading changes...</p>
       <template data-error-template>
-        <p class="flow-error-state" role="alert">
-          Changes could not be loaded because the version data is unavailable.
-        </p>
+        <p class="flow-error-state" role="alert">Changes could not be loaded.</p>
       </template>
-    </flow-version-ready>
+    </import-html>
   </main>
 </flow-version-context>

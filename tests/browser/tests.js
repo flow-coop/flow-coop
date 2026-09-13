@@ -13,6 +13,7 @@ import {
   resolveVersionContext,
 } from "/components/FlowVersionContext.js";
 import { FlowVersionReady } from "/components/FlowVersionReady.js";
+import { FlowVersionActivities } from "/components/FlowVersionActivities.js";
 import {
   FlowCollectionPages,
   validateCollectionResource,
@@ -91,8 +92,9 @@ class MockResource {
 }
 
 class MockStore {
-  constructor(entries) {
+  constructor(entries, statements = []) {
     this.entries = entries;
+    this.statements = statements;
     this.fetched = [];
   }
 
@@ -103,6 +105,10 @@ class MockStore {
   async fetch(uri) {
     this.fetched.push(uri);
     if (this.entries[uri]?.reject) throw new Error(`Fetch failed: ${uri}`);
+  }
+
+  statementsMatching() {
+    return this.statements;
   }
 }
 
@@ -360,6 +366,58 @@ await test("supplementary provenance resolves all used resources", async () => {
   assert(store.fetched.includes(provenance), "supplementary provenance was not fetched");
 });
 
+await test("supplementary provenance selects the current content activity", async () => {
+  const version = "https://example.test/topic/";
+  const provenance = "https://example.test/topic/index.ttl";
+  const deployment = "https://example.test/activity/deployment";
+  const migration = `${provenance}#migration`;
+  const deploymentSource = "https://example.test/version/deployed";
+  const migrationNote = "https://social.test/note/incorporated";
+  const entries = {
+    [version]: {
+      relations: { [PROV_WAS_GENERATED_BY]: [deployment, migration] },
+    },
+    [deployment]: activityEntry([deploymentSource]),
+    [provenance]: {},
+    [migration]: activityEntry([migrationNote]),
+  };
+  const store = new MockStore(entries, [{
+    subject: { value: version },
+    predicate: { value: PROV_WAS_GENERATED_BY },
+    object: { value: migration },
+    graph: { value: provenance },
+  }]);
+  const context = await resolveVersionContext({ store }, version, [provenance]);
+  assert(context.directActivityUris.size === 1, "multiple current activities selected");
+  assert(context.directActivityUris.has(migration), "supplementary activity was not selected");
+  assert(context.usedUris.has(migrationNote), "migration Note was not incorporated");
+  assert(!context.usedUris.has(deploymentSource), "deployment history contaminated content history");
+});
+
+await test("version activities render each selected activity once", async () => {
+  const activity = "https://example.test/activity/current";
+  const host = document.createElement("div");
+  host.addEventListener("flow:request-version-context", event => {
+    event.detail.resolve({ directActivityUris: new Set([activity]) });
+  });
+  const activities = new FlowVersionActivities();
+  activities.innerHTML = `
+    <template><pos-resource data-version-activity></pos-resource></template>
+    <p data-empty hidden>No changes</p>
+    <p data-error hidden>Error</p>
+  `;
+  host.append(activities);
+  document.body.append(host);
+  await waitForAttribute(activities, "ready");
+  const resources = activities.querySelectorAll(
+    ":scope > pos-resource[data-version-activity]",
+  );
+  assert(resources.length === 1, "selected activity rendered more than once");
+  assert(resources[0].getAttribute("uri") === activity, "activity resource differs");
+  assert(activities.querySelector("[data-empty]").hidden, "empty state stayed visible");
+  host.remove();
+});
+
 await test("page version context inherits the shell resource", async () => {
   const version = "https://example.test/topic/";
   const store = new MockStore({ [version]: {} });
@@ -596,16 +654,36 @@ await test("task Changes stays independent when its outbox fails", async () => {
   const discussion = fragment.querySelector(
     'import-html[src="/templates/discussion/section.html"]',
   );
-  const versionReady = fragment.querySelector("flow-version-ready");
+  const changes = fragment.querySelector(
+    'import-html[src="/templates/changes.html"]',
+  );
+  const changesResponse = await fetch("/templates/changes.html");
+  const changesFragment = validatedTemplateFragment(
+    await changesResponse.text(),
+    new URL("/templates/changes.html", location.href),
+  );
+  const versionReady = changesFragment.querySelector("flow-version-ready");
   const readyTemplate = versionReady?.querySelector(
     ":scope > template:not([data-error-template])",
   );
-  const changes = readyTemplate?.content.querySelector(
-    'pos-resource[uri="https://flowcoop.eu/topics/task_management/index.ttl#migration"] > import-html[src="/templates/activity-changes.html"]',
+  const activityList = readyTemplate?.content.querySelector(
+    "flow-version-activities",
+  );
+  const activityTemplate = activityList?.querySelector(":scope > template");
+  const activityImport = activityTemplate?.content.querySelector(
+    'import-html[src="/templates/activity-changes.html"]',
   );
   assert(discussion, "task discussion import is missing");
   assert(changes, "task Changes import is missing");
   assert(!discussion.contains(changes), "Changes is nested under discussion");
+  assert(versionReady, "Changes does not wait for version context");
+  assert(activityImport, "Changes does not import each RDF-selected activity");
+  assert(
+    !fragment.querySelector(
+      'pos-resource[uri="https://flowcoop.eu/topics/task_management/index.ttl#migration"]',
+    ),
+    "task Changes still hardcodes its activity",
+  );
 
   const collection = "https://example.test/failing-outbox";
   const failed = new FlowCollectionPages();
@@ -621,7 +699,7 @@ await test("task Changes stays independent when its outbox fails", async () => {
   await waitForMutation();
   await waitForMutation();
   assert(failed.hasAttribute("ready"), "recovered outbox could not be retried");
-  assert(readyTemplate.content.contains(changes), "outbox failure removed Changes");
+  assert(fragment.contains(changes), "outbox failure removed Changes");
 });
 
 await test("discussion relations instantiate before remote fetches", async () => {

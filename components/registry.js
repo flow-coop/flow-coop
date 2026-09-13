@@ -30,6 +30,11 @@ export const componentRegistry = Object.freeze({
     module: "./FlowVersionContext.js",
     attributes: [...commonAttributes, "provenance-uri", "uri"],
   },
+  "flow-version-activities": {
+    provider: "flow",
+    module: "./FlowVersionActivities.js",
+    attributes: commonAttributes,
+  },
   "flow-version-ready": {
     provider: "flow",
     module: "./FlowVersionReady.js",

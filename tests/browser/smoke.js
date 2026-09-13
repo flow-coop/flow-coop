@@ -136,8 +136,18 @@ async function loadRoute(route, width) {
     if (doc.querySelectorAll(".flow-comment-list .flow-comment-card").length < 5) {
       throw new Error("known open discussion comments are missing");
     }
-    if (doc.querySelectorAll(".flow-change-inputs-title").length !== 1) {
-      throw new Error("incorporated content heading was repeated");
+    const incorporatedHeadings = doc.querySelectorAll(
+      ".flow-change-inputs-title",
+    );
+    if (incorporatedHeadings.length !== 1) {
+      const activities = [...doc.querySelectorAll(
+        ".flow-change-activities > flow-version-activities > pos-resource",
+      )].map(element =>
+        element.getAttribute("uri") || element.getAttribute("about"),
+      );
+      throw new Error(
+        `incorporated content heading count ${incorporatedHeadings.length}; activities: ${activities.join(", ")}`,
+      );
     }
     if (doc.querySelectorAll(".flow-change-resource").length !== 1) {
       throw new Error("previous version input was not rendered once");
@@ -194,7 +204,7 @@ async function loadRoute(route, width) {
   if (doc.querySelector("import-html[error], [data-version-error]:not([hidden])")) {
     throw new Error("template or version context failed");
   }
-  const flowSelector = "flow-version-context, flow-version-ready, flow-collection-pages, flow-if-open, flow-sanitized-content, flow-fediverse-interaction";
+  const flowSelector = "flow-version-context, flow-version-ready, flow-version-activities, flow-collection-pages, flow-if-open, flow-sanitized-content, flow-fediverse-interaction";
   await waitFor(
     () => [...doc.querySelectorAll(flowSelector)].every(element =>
       frame.contentWindow.customElements.get(element.localName)),

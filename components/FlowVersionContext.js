@@ -12,6 +12,21 @@ function relationUris(store, subjectUri, predicate) {
     .flatMap((relation) => relation.uris);
 }
 
+function relationUrisInDocument(store, subjectUri, predicate, documentUri) {
+  if (typeof store.statementsMatching !== "function") return [];
+  const graphUrl = new URL(documentUri);
+  graphUrl.hash = "";
+  return store.statementsMatching()
+    .filter(statement => {
+      const graph = statement.graph?.value || statement.why?.value;
+      return statement.subject?.value === subjectUri &&
+        statement.predicate?.value === predicate &&
+        graph === graphUrl.href;
+    })
+    .map(statement => statement.object?.value)
+    .filter(Boolean);
+}
+
 function hasType(store, subjectUri, typeUri) {
   return store.get(subjectUri).types().some(type => type.uri === typeUri);
 }
@@ -41,6 +56,24 @@ export async function resolveVersionContext(
   for (const provenanceUri of provenanceUris) {
     await os.store.fetch(provenanceUri);
   }
+  const assertedActivityUris = relationUris(
+    os.store,
+    versionUri,
+    PROV_WAS_GENERATED_BY,
+  );
+  const supplementaryActivityUris = provenanceUris.flatMap(provenanceUri =>
+    relationUrisInDocument(
+      os.store,
+      versionUri,
+      PROV_WAS_GENERATED_BY,
+      provenanceUri,
+    ),
+  );
+  const directActivityUris = new Set(
+    supplementaryActivityUris.length > 0
+      ? supplementaryActivityUris
+      : assertedActivityUris,
+  );
 
   while (pendingVersions.length > 0) {
     const currentVersion = pendingVersions.shift();
@@ -52,11 +85,9 @@ export async function resolveVersionContext(
     }
 
     visitedVersions.add(currentVersion);
-    const generatedBy = relationUris(
-      os.store,
-      currentVersion,
-      PROV_WAS_GENERATED_BY,
-    );
+    const generatedBy = currentVersion === versionUri
+      ? directActivityUris
+      : relationUris(os.store, currentVersion, PROV_WAS_GENERATED_BY);
 
     for (const activityUri of generatedBy) {
       activityUris.add(activityUri);
@@ -79,6 +110,7 @@ export async function resolveVersionContext(
     versionUri,
     usedUris,
     directUsedUris,
+    directActivityUris,
     activityUris,
     visitedVersions,
   };
@@ -89,7 +121,8 @@ export async function resolveVersionContext(
  *
  * @customElement flow-version-context
  * @attr {string} uri - Version resource; otherwise inherited from PodOS.
- * @attr {string} provenance-uri - Explicit supplementary RDF metadata document.
+ * @attr {string} provenance-uri - Explicit supplementary RDF metadata document;
+ * its direct generating-activity assertions scope the content history when present.
  * @dependency Inherits the current resource and OS store through PodOS events.
  * @fires flow:version-ready - Provides the resolved version and used resources.
  * @fires flow:error - Reports provenance fetch or traversal failures.
