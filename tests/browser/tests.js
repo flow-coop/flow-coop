@@ -17,6 +17,7 @@ import {
   validateCollectionResource,
 } from "/components/FlowCollectionPages.js";
 import { FlowIfOpen } from "/components/FlowIfOpen.js";
+import { FlowFediverseInteraction } from "/components/FlowFediverseInteraction.js";
 import { sanitizedContentFragment } from "/components/FlowSanitizedContent.js";
 
 const AS_COLLECTION = "https://www.w3.org/ns/activitystreams#OrderedCollection";
@@ -329,6 +330,58 @@ await test("supplementary provenance resolves all used resources", async () => {
   const context = await resolveVersionContext({ store }, version, [provenance]);
   assert(context.directUsedUris.size === 8, "did not resolve eight direct Notes");
   assert(store.fetched.includes(provenance), "supplementary provenance was not fetched");
+});
+
+await test("page version context inherits the shell resource", async () => {
+  const version = "https://example.test/topic/";
+  const store = new MockStore({ [version]: {} });
+  const host = document.createElement("div");
+  host.addEventListener("pod-os:resource", event => event.detail(store.get(version)));
+  host.addEventListener("pod-os:init", event => event.detail({ store }));
+  const context = document.createElement("flow-version-context");
+  host.append(context);
+  document.body.append(host);
+  await waitForAttribute(context, "ready");
+  assert(!context.hasAttribute("uri"), "page context duplicates the shell URI");
+  assert(context.resource?.uri === version, "page resource was not inherited");
+  host.remove();
+
+  for (const path of [
+    "/index.template.html",
+    "/about/flows/index.template.html",
+    "/about/tools/index.template.html",
+    "/about/topics/index.template.html",
+    "/topics/task_management/index.template.html",
+  ]) {
+    const response = await fetch(path);
+    const fragment = validatedTemplateFragment(
+      await response.text(),
+      new URL(path, location.href),
+    );
+    assert(
+      !fragment.querySelector("flow-version-context")?.hasAttribute("uri"),
+      `${path} duplicates the shell URI`,
+    );
+  }
+});
+
+await test("Fediverse contributions use the resolved version context", async () => {
+  const version = "https://example.test/topic/version";
+  const actor = "https://social.test/users/flow";
+  const host = document.createElement("div");
+  host.addEventListener("flow:request-version-context", event => {
+    event.detail.resolve(Promise.resolve({ versionUri: version }));
+  });
+  const interaction = new FlowFediverseInteraction();
+  interaction.resource = new MockResource(actor, {
+    values: {
+      ["https://www.w3.org/ns/activitystreams#preferredUsername"]: "flow",
+    },
+  });
+  host.append(interaction);
+  const values = await interaction.interactionValues("contribute");
+  assert(values.content.includes(version), "contribution omitted the resolved version");
+  assert(values.content.startsWith("@flow@social.test"), "actor mention was lost");
 });
 
 await test("explicit version activity excludes stale root activities", async () => {
