@@ -1,5 +1,6 @@
 @prefix as: <https://www.w3.org/ns/activitystreams#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix schema: <https://schema.org/>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -18,6 +19,44 @@
         <https://mastodon.social/users/jg10/statuses/117133374863355352>,
         <https://mastodon.social/users/jg10/statuses/117133378229611560>,
         <https://mastodon.social/users/jg10/statuses/117133392772393654>,
+        <https://mastodon.social/users/jg10/statuses/117133425566377347>.
+
+<https://flow.solidcommunity.net/topics/task_management/history/2026/08/22-115200/>
+    prov:wasGeneratedBy <https://flow.solidcommunity.net/topics/task_management/history/changelog/1.ttl#1>.
+
+<https://flow.solidcommunity.net/topics/task_management/history/2026/08/23-064400/>
+    prov:wasGeneratedBy <https://flow.solidcommunity.net/topics/task_management/history/changelog/1.ttl#2>.
+
+<https://flow.solidcommunity.net/topics/task_management/history/draft/>
+    prov:wasGeneratedBy <https://flow.solidcommunity.net/topics/task_management/history/changelog/1.ttl#3>.
+
+<https://flow.solidcommunity.net/topics/task_management/history/changelog/1.ttl#1>
+    a prov:Activity;
+    rdfs:label "Initial save";
+    prov:wasAssociatedWith <https://mastodon.social/users/jg10>;
+    prov:generated <https://flow.solidcommunity.net/topics/task_management/history/2026/08/22-115200/>.
+
+<https://flow.solidcommunity.net/topics/task_management/history/changelog/1.ttl#2>
+    a prov:Activity;
+    rdfs:label "Add to why and flows";
+    prov:wasAssociatedWith <https://mastodon.social/users/jg10>;
+    prov:generated <https://flow.solidcommunity.net/topics/task_management/history/2026/08/23-064400/>;
+    prov:used
+        <https://flow.solidcommunity.net/topics/task_management/history/2026/08/22-115200/>,
+        <https://mastodon.social/users/jg10/statuses/117116262041398775>,
+        <https://mastodon.social/users/jg10/statuses/117116293386353207>,
+        <https://mastodon.social/users/jg10/statuses/117133369969380514>,
+        <https://mastodon.social/users/jg10/statuses/117133374863355352>,
+        <https://mastodon.social/users/jg10/statuses/117133378229611560>,
+        <https://mastodon.social/users/jg10/statuses/117133392772393654>.
+
+<https://flow.solidcommunity.net/topics/task_management/history/changelog/1.ttl#3>
+    a prov:Activity;
+    rdfs:label "Added tools";
+    prov:generated <https://flow.solidcommunity.net/topics/task_management/history/draft/>;
+    prov:used
+        <https://flow.solidcommunity.net/topics/task_management/history/2026/08/23-064400/>,
+        <https://mastodon.social/users/jg10/statuses/117116304491150823>,
         <https://mastodon.social/users/jg10/statuses/117133425566377347>.
 
 <https://mastodon.social/users/jg10> schema:name "JG10".

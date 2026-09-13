@@ -9,6 +9,7 @@ import {
   validatedTemplateFragment,
 } from "/components/ImportHtml.js";
 import {
+  FlowVersionContext,
   resolveVersionContext,
 } from "/components/FlowVersionContext.js";
 import { FlowVersionReady } from "/components/FlowVersionReady.js";
@@ -26,6 +27,7 @@ const AS_FIRST = "https://www.w3.org/ns/activitystreams#first";
 const AS_ITEMS = "https://www.w3.org/ns/activitystreams#items";
 const AS_NEXT = "https://www.w3.org/ns/activitystreams#next";
 const AS_NOTE = "https://www.w3.org/ns/activitystreams#Note";
+const PROV_ACTIVITY = "http://www.w3.org/ns/prov#Activity";
 const PROV_USED = "http://www.w3.org/ns/prov#used";
 const PROV_WAS_GENERATED_BY = "http://www.w3.org/ns/prov#wasGeneratedBy";
 const results = document.querySelector("#results");
@@ -118,6 +120,32 @@ function collectionMarkup() {
       <span data-retry-label hidden>Retry</span>
     </button>
   `;
+}
+
+function activityEntry(used = []) {
+  return {
+    types: [PROV_ACTIVITY],
+    relations: { [PROV_USED]: used },
+  };
+}
+
+function turtleSubjectBlock(source, uri) {
+  const marker = `<${uri}>`;
+  const lineStart = source.indexOf(`\n${marker}`);
+  const start = source.startsWith(marker)
+    ? 0
+    : lineStart < 0
+      ? -1
+      : lineStart + 1;
+  if (start < 0) throw new Error(`Missing Turtle subject: ${uri}`);
+  const end = source.indexOf("\n\n", start);
+  return source.slice(start, end < 0 ? source.length : end);
+}
+
+function turtleUsedUris(block) {
+  const start = block.indexOf("prov:used");
+  if (start < 0) return [];
+  return [...block.slice(start).matchAll(/<([^>]+)>/gu)].map(match => match[1]);
 }
 
 await test("loader handles initial, dynamic, ordered, and deduplicated elements", async () => {
@@ -325,7 +353,7 @@ await test("supplementary provenance resolves all used resources", async () => {
   const store = new MockStore({
     [version]: { relations: { [PROV_WAS_GENERATED_BY]: [activity] } },
     [provenance]: {},
-    [activity]: { relations: { [PROV_USED]: notes } },
+    [activity]: activityEntry(notes),
   });
   const context = await resolveVersionContext({ store }, version, [provenance]);
   assert(context.directUsedUris.size === 8, "did not resolve eight direct Notes");
@@ -384,25 +412,178 @@ await test("Fediverse contributions use the resolved version context", async () 
   assert(values.content.startsWith("@flow@social.test"), "actor mention was lost");
 });
 
-await test("explicit version activity excludes stale root activities", async () => {
+await test("version history follows explicit cross-origin RDF links", async () => {
   const version = "https://example.test/topic/";
-  const selected = "https://example.test/topic/index.ttl#migration";
-  const stale = "https://example.test/history/stale-activity";
-  const selectedNote = "https://social.test/note/selected";
-  const staleNote = "https://social.test/note/stale";
+  const currentActivity = "https://example.test/activity/current";
+  const previousVersion = "https://another.test/version/previous";
+  const previousActivity = "https://another.test/activity/previous";
+  const currentNote = "https://social.test/note/current";
+  const previousNote = "https://social.test/note/previous";
   const store = new MockStore({
-    [version]: { relations: { [PROV_WAS_GENERATED_BY]: [stale, selected] } },
-    [selected]: { relations: { [PROV_USED]: [selectedNote] } },
-    [stale]: { relations: { [PROV_USED]: [staleNote] } },
+    [version]: { relations: { [PROV_WAS_GENERATED_BY]: [currentActivity] } },
+    [currentActivity]: activityEntry([previousVersion, currentNote]),
+    [previousVersion]: {
+      relations: { [PROV_WAS_GENERATED_BY]: [previousActivity] },
+    },
+    [previousActivity]: activityEntry([previousNote]),
   });
-  const context = await resolveVersionContext(
-    { store },
-    version,
-    [],
-    [selected],
+  const context = await resolveVersionContext({ store }, version);
+  assert(context.directUsedUris.has(currentNote), "current Note was not direct");
+  assert(context.usedUris.has(previousNote), "cross-origin history was not traversed");
+  assert(context.visitedVersions.has(previousVersion), "previous version was not visited");
+  assert(!store.fetched.includes(previousVersion), "snapshotted version was fetched");
+});
+
+await test("version history does not probe unlinked sources", async () => {
+  const version = "https://example.test/topic/";
+  const activity = "https://example.test/activity/current";
+  const source = "https://example.test/source/document";
+  const store = new MockStore({
+    [version]: { relations: { [PROV_WAS_GENERATED_BY]: [activity] } },
+    [activity]: activityEntry([source]),
+    [source]: {},
+  });
+  const context = await resolveVersionContext({ store }, version);
+  assert(context.usedUris.has(source), "direct source was not recorded");
+  assert(!store.fetched.includes(source), "unlinked source was speculatively fetched");
+});
+
+await test("version history handles cycles and fails on caps or missing activities", async () => {
+  const firstVersion = "https://example.test/version/one";
+  const secondVersion = "https://elsewhere.test/version/two";
+  const firstActivity = "https://example.test/activity/one";
+  const secondActivity = "https://elsewhere.test/activity/two";
+  const cycleStore = new MockStore({
+    [firstVersion]: { relations: { [PROV_WAS_GENERATED_BY]: [firstActivity] } },
+    [firstActivity]: activityEntry([secondVersion]),
+    [secondVersion]: { relations: { [PROV_WAS_GENERATED_BY]: [secondActivity] } },
+    [secondActivity]: activityEntry([firstVersion]),
+  });
+  const cycle = await resolveVersionContext({ store: cycleStore }, firstVersion);
+  assert(cycle.visitedVersions.size === 2, "provenance cycle did not terminate");
+
+  const cappedEntries = {};
+  for (let index = 0; index <= 50; index += 1) {
+    const versionUri = `https://example.test/version/${index}`;
+    const activityUri = `https://example.test/activity/${index}`;
+    cappedEntries[versionUri] = {
+      relations: { [PROV_WAS_GENERATED_BY]: [activityUri] },
+    };
+    cappedEntries[activityUri] = activityEntry(
+      index < 50 ? [`https://example.test/version/${index + 1}`] : [],
+    );
+  }
+  let capFailed = false;
+  try {
+    await resolveVersionContext(
+      { store: new MockStore(cappedEntries) },
+      "https://example.test/version/0",
+    );
+  } catch {
+    capFailed = true;
+  }
+  assert(capFailed, "version traversal cap was not enforced");
+
+  const missingActivity = "https://example.test/activity/missing";
+  let missingFailed = false;
+  try {
+    await resolveVersionContext(
+      {
+        store: new MockStore({
+          [firstVersion]: {
+            relations: { [PROV_WAS_GENERATED_BY]: [missingActivity] },
+          },
+          [missingActivity]: { reject: true },
+        }),
+      },
+      firstVersion,
+    );
+  } catch {
+    missingFailed = true;
+  }
+  assert(missingFailed, "missing explicit activity did not fail closed");
+});
+
+await test("task provenance snapshots the authoritative version graph", async () => {
+  const response = await fetch("/topics/task_management/index.ttl");
+  const source = await response.text();
+  const migration =
+    "https://flowcoop.eu/topics/task_management/index.ttl#migration";
+  const previousDraft =
+    "https://flow.solidcommunity.net/topics/task_management/history/draft/";
+  const incorporated = [
+    "117116262041398775", "117116293386353207", "117116304491150823",
+    "117133369969380514", "117133374863355352", "117133378229611560",
+    "117133392772393654", "117133425566377347",
+  ];
+  const open = [
+    "117116322505159764", "117116340808425129", "117133422033259970",
+    "117211984867595038", "117223553798307518",
+  ];
+  const migrationBlock = turtleSubjectBlock(source, migration);
+  const migrationInputs = turtleUsedUris(migrationBlock);
+  assert(migrationInputs.includes(previousDraft), "previous draft is missing");
+  assert(
+    incorporated.every(id => migrationInputs.some(uri => uri.endsWith(id))),
+    "migration does not contain all eight direct Notes",
   );
-  assert(context.directUsedUris.has(selectedNote), "selected activity was not used");
-  assert(!context.usedUris.has(staleNote), "stale root activity contaminated context");
+  assert(
+    migrationInputs.length === 9,
+    "migration inputs are not exactly one source and eight Notes",
+  );
+  assert(open.every(id => !migrationInputs.some(uri => uri.endsWith(id))), "open Note was incorporated");
+
+  const history = [
+    {
+      id: "1",
+      label: "Initial save",
+      generated: "https://flow.solidcommunity.net/topics/task_management/history/2026/08/22-115200/",
+      used: [],
+    },
+    {
+      id: "2",
+      label: "Add to why and flows",
+      generated: "https://flow.solidcommunity.net/topics/task_management/history/2026/08/23-064400/",
+      used: [
+        "https://flow.solidcommunity.net/topics/task_management/history/2026/08/22-115200/",
+        ...incorporated
+          .filter(id => id !== "117116304491150823" && id !== "117133425566377347")
+          .map(id => `https://mastodon.social/users/jg10/statuses/${id}`),
+      ],
+    },
+    {
+      id: "3",
+      label: "Added tools",
+      generated: previousDraft,
+      used: [
+        "https://flow.solidcommunity.net/topics/task_management/history/2026/08/23-064400/",
+        "https://mastodon.social/users/jg10/statuses/117116304491150823",
+        "https://mastodon.social/users/jg10/statuses/117133425566377347",
+      ],
+    },
+  ];
+  for (const expected of history) {
+    const activity =
+      `https://flow.solidcommunity.net/topics/task_management/history/changelog/1.ttl#${expected.id}`;
+    const block = turtleSubjectBlock(source, activity);
+    const inputs = turtleUsedUris(block);
+    assert(block.includes(`rdfs:label "${expected.label}"`), `${expected.id} label differs`);
+    assert(block.includes(`<${expected.generated}>`), `${expected.id} generated version differs`);
+    assert(
+      inputs.length === expected.used.length &&
+        expected.used.every(uri => inputs.includes(uri)),
+      `${expected.id} inputs differ`,
+    );
+    assert(
+      turtleSubjectBlock(source, expected.generated).includes(`<${activity}>`),
+      `${expected.id} inverse version link is missing`,
+    );
+  }
+
+  assert(
+    !FlowVersionContext.observedAttributes.includes("activity-uri"),
+    "activity-uri escape hatch remains",
+  );
 });
 
 await test("task Changes stays independent when its outbox fails", async () => {

@@ -206,20 +206,14 @@ async function loadRoute(route, width) {
     }
   }
   const context = doc.querySelector("flow-version-context");
-  if (!context?.getAttribute("uri") || !context?.getAttribute("provenance-uri")) {
-    throw new Error("explicit RDF context is missing");
+  if (!context?.resource?.uri || !context?.getAttribute("provenance-uri")) {
+    throw new Error("inherited RDF context is missing");
   }
   if (
     route.taskHistory &&
     context.getAttribute("provenance-uri") !== "/topics/task_management/index.ttl"
   ) {
     throw new Error("task provenance does not use the tested page resource");
-  }
-  if (
-    route.taskHistory &&
-    context.getAttribute("activity-uri") !== taskMigrationActivity
-  ) {
-    throw new Error("task version does not select its migration activity");
   }
   const discussion = doc.querySelector(".flow-discussion");
   if (route.discussion) {

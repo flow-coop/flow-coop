@@ -2,6 +2,7 @@ import { ReceiveResourceOS } from "./ReceiveResourceOS.js";
 
 const PROV_USED = "http://www.w3.org/ns/prov#used";
 const PROV_WAS_GENERATED_BY = "http://www.w3.org/ns/prov#wasGeneratedBy";
+const PROV_ACTIVITY = "http://www.w3.org/ns/prov#Activity";
 const MAX_VERSION_RESOURCES = 50;
 
 function relationUris(store, subjectUri, predicate) {
@@ -11,31 +12,29 @@ function relationUris(store, subjectUri, predicate) {
     .flatMap((relation) => relation.uris);
 }
 
-function sameOrigin(left, right) {
-  return new URL(left).origin === new URL(right).origin;
+function hasType(store, subjectUri, typeUri) {
+  return store.get(subjectUri).types().some(type => type.uri === typeUri);
 }
 
-async function activityUrisForVersion(store, versionUri, cache) {
-  if (cache.has(versionUri)) return cache.get(versionUri);
-
-  await store.fetch(versionUri);
-  const activityUris = relationUris(store, versionUri, PROV_WAS_GENERATED_BY);
-
-  cache.set(versionUri, activityUris);
-  return activityUris;
+async function usedUrisForActivity(store, activityUri) {
+  if (!hasType(store, activityUri, PROV_ACTIVITY)) {
+    await store.fetch(activityUri);
+  }
+  if (!hasType(store, activityUri, PROV_ACTIVITY)) {
+    throw new Error(`Provenance activity could not be resolved: ${activityUri}`);
+  }
+  return relationUris(store, activityUri, PROV_USED);
 }
 
 export async function resolveVersionContext(
   os,
   versionUri,
   provenanceUris = [],
-  directActivityUris = null,
 ) {
   const usedUris = new Set();
   const directUsedUris = new Set();
   const activityUris = new Set();
   const visitedVersions = new Set();
-  const versionActivities = new Map();
   const pendingVersions = [versionUri];
 
   await os.store.fetch(versionUri);
@@ -44,43 +43,31 @@ export async function resolveVersionContext(
   }
 
   while (pendingVersions.length > 0) {
+    const currentVersion = pendingVersions.shift();
+    if (visitedVersions.has(currentVersion)) continue;
     if (visitedVersions.size >= MAX_VERSION_RESOURCES) {
       throw new Error(
         `Version traversal exceeded ${MAX_VERSION_RESOURCES} resources.`,
       );
     }
 
-    const currentVersion = pendingVersions.shift();
-    if (visitedVersions.has(currentVersion)) continue;
     visitedVersions.add(currentVersion);
-
-    const generatedBy =
-      currentVersion === versionUri && directActivityUris
-        ? directActivityUris
-        : await activityUrisForVersion(
-            os.store,
-            currentVersion,
-            versionActivities,
-          );
+    const generatedBy = relationUris(
+      os.store,
+      currentVersion,
+      PROV_WAS_GENERATED_BY,
+    );
 
     for (const activityUri of generatedBy) {
       activityUris.add(activityUri);
-      await os.store.fetch(activityUri);
-      const inputs = relationUris(os.store, activityUri, PROV_USED);
+      const inputs = await usedUrisForActivity(os.store, activityUri);
 
       for (const inputUri of inputs) {
         usedUris.add(inputUri);
         if (currentVersion === versionUri) directUsedUris.add(inputUri);
         if (
-          !sameOrigin(versionUri, inputUri) ||
-          visitedVersions.has(inputUri)
-        ) {
-          continue;
-        }
-
-        if (
-          (await activityUrisForVersion(os.store, inputUri, versionActivities))
-            .length > 0
+          !visitedVersions.has(inputUri) &&
+          relationUris(os.store, inputUri, PROV_WAS_GENERATED_BY).length > 0
         ) {
           pendingVersions.push(inputUri);
         }
@@ -101,7 +88,6 @@ export async function resolveVersionContext(
  * Supplies provenance-derived version context to descendant Flow components.
  *
  * @customElement flow-version-context
- * @attr {string} activity-uri - Explicit activity that generated this version.
  * @attr {string} uri - Version resource; otherwise inherited from PodOS.
  * @attr {string} provenance-uri - Explicit supplementary RDF metadata document.
  * @dependency Inherits the current resource and OS store through PodOS events.
@@ -111,7 +97,7 @@ export async function resolveVersionContext(
  * @example <flow-version-context uri="https://example.test/topic/" provenance-uri="https://example.test/topic/index.ttl"></flow-version-context>
  */
 export class FlowVersionContext extends ReceiveResourceOS {
-  static observedAttributes = ["activity-uri", "provenance-uri", "uri"];
+  static observedAttributes = ["provenance-uri", "uri"];
 
   constructor() {
     super();
@@ -160,15 +146,10 @@ export class FlowVersionContext extends ReceiveResourceOS {
 
     const provenanceUri = this.getAttribute("provenance-uri");
     const provenanceUris = provenanceUri ? [new URL(provenanceUri, document.baseURI).href] : [];
-    const activityUri = this.getAttribute("activity-uri");
-    const directActivityUris = activityUri
-      ? [new URL(activityUri, document.baseURI).href]
-      : null;
     this._contextPromise = resolveVersionContext(
       this.os,
       versionUri,
       provenanceUris,
-      directActivityUris,
     )
       .then((context) => {
         if (generation !== this._generation) return context;

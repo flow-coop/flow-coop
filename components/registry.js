@@ -28,7 +28,7 @@ export const componentRegistry = Object.freeze({
   "flow-version-context": {
     provider: "flow",
     module: "./FlowVersionContext.js",
-    attributes: [...commonAttributes, "activity-uri", "provenance-uri", "uri"],
+    attributes: [...commonAttributes, "provenance-uri", "uri"],
   },
   "flow-version-ready": {
     provider: "flow",
