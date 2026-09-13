@@ -3,7 +3,11 @@ import {
   createComponentLoader,
   observeRegisteredElements,
 } from "/components/ComponentLoader.js";
-import { validatedTemplateFragment } from "/components/ImportHtml.js";
+import {
+  ImportHtml,
+  templateUrl,
+  validatedTemplateFragment,
+} from "/components/ImportHtml.js";
 import {
   resolveVersionContext,
 } from "/components/FlowVersionContext.js";
@@ -44,6 +48,23 @@ async function test(name, run) {
 
 function waitForMutation() {
   return new Promise(resolve => setTimeout(resolve, 0));
+}
+
+function waitForAttribute(element, attribute, timeout = 5_000) {
+  if (element.hasAttribute(attribute)) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const observer = new MutationObserver(() => {
+      if (!element.hasAttribute(attribute)) return;
+      clearTimeout(timer);
+      observer.disconnect();
+      resolve();
+    });
+    const timer = setTimeout(() => {
+      observer.disconnect();
+      reject(new Error(`${attribute} timed out`));
+    }, timeout);
+    observer.observe(element, { attributes: true });
+  });
 }
 
 class MockResource {
@@ -176,6 +197,86 @@ await test("templates use DOMPurify ESM and reject executable or unknown markup"
       rejected = true;
     }
     assert(rejected, `unsafe template accepted: ${html}`);
+  }
+});
+
+await test("import-html accepts only trusted fragment and page locations", async () => {
+  for (const path of [
+    "/templates/discussion/header.html",
+    "/index.template.html",
+    "/about/topics/index.template.html",
+  ]) {
+    assert(templateUrl(path).pathname === path, `${path} was rejected`);
+  }
+  const credentialed = new URL("/index.template.html", location.href);
+  credentialed.username = "user";
+  credentialed.password = "password";
+  for (const path of [
+    "/index.html",
+    "/about/topics/page.html",
+    "https://example.test/index.template.html",
+    credentialed.href,
+  ]) {
+    let rejected = false;
+    try {
+      templateUrl(path);
+    } catch {
+      rejected = true;
+    }
+    assert(rejected, `${path} was accepted`);
+  }
+});
+
+await test("import-html loads every colocated page template", async () => {
+  for (const path of [
+    "/index.template.html",
+    "/about/flows/index.template.html",
+    "/about/tools/index.template.html",
+    "/about/topics/index.template.html",
+    "/topics/task_management/index.template.html",
+  ]) {
+    const element = new ImportHtml();
+    element.setAttribute("src", path);
+    element.innerHTML =
+      "<p data-template-loading>Loading</p><template data-error-template><p data-page-error>Error</p></template>";
+    document.body.append(element);
+    await waitForAttribute(element, "ready");
+    assert(!element.hasAttribute("error"), `${path} failed to load`);
+    element.remove();
+  }
+});
+
+await test("import-html preserves authored errors and deduplicates reconnects", async () => {
+  const originalFetch = window.fetch;
+  const path = "/index.template.html?lifecycle-test=1";
+  let requests = 0;
+  window.fetch = (...args) => {
+    if (new URL(args[0], location.href).href === new URL(path, location.href).href) {
+      requests += 1;
+    }
+    return originalFetch(...args);
+  };
+  try {
+    const element = new ImportHtml();
+    element.setAttribute("src", path);
+    element.innerHTML =
+      "<p data-template-loading>Loading</p><template data-error-template><p data-page-error>Page unavailable</p></template>";
+    document.body.append(element);
+    await waitForAttribute(element, "ready");
+    element.remove();
+    document.body.append(element);
+    await new Promise(resolve => setTimeout(resolve, 50));
+    assert(element.hasAttribute("ready"), "reconnected template did not reload");
+    assert(!element.hasAttribute("loading"), "reconnected template stayed loading");
+    assert(requests === 1, `template was requested ${requests} times`);
+
+    element.setAttribute("src", "/missing/index.template.html");
+    await waitForAttribute(element, "error");
+    assert(element.querySelector("[data-page-error]"), "authored error was lost");
+    assert(!element.hasAttribute("ready"), "failed reload stayed ready");
+    element.remove();
+  } finally {
+    window.fetch = originalFetch;
   }
 });
 

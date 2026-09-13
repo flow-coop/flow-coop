@@ -34,15 +34,23 @@ const NATIVE_ATTRIBUTES = Object.freeze({
 const TEMPLATE_REQUESTS = new Map();
 const REQUEST_ABORT_GRACE_MS = 250;
 
-function templateUrl(value) {
+export function templateUrl(value) {
   if (!value) throw new Error("import-html requires src.");
   const url = new URL(value, window.location.href);
+  const reusableFragment =
+    url.pathname.startsWith("/templates/") && url.pathname.endsWith(".html");
+  const pageTemplate =
+    url.pathname === "/index.template.html" ||
+    url.pathname.endsWith("/index.template.html");
   if (
     url.origin !== window.location.origin ||
-    !url.pathname.startsWith("/templates/") ||
-    !url.pathname.endsWith(".html")
+    url.username ||
+    url.password ||
+    (!reusableFragment && !pageTemplate)
   ) {
-    throw new Error("Templates must be same-origin /templates/*.html resources.");
+    throw new Error(
+      "Templates must be same-origin reusable fragments or index.template.html pages.",
+    );
   }
   return url;
 }
@@ -197,7 +205,8 @@ export function validatedTemplateFragment(html, sourceUrl, purifier = DOMPurify)
  * Fetches and sanitizes a same-origin declarative HTML template.
  *
  * @customElement import-html
- * @attr {string} src - A same-origin URL below /templates/.
+ * @attr {string} src - A same-origin `/templates/*.html` fragment or
+ * `index.template.html` page at any route depth.
  * @slot - A direct `template[data-error-template]` rendered after failure.
  * @dependency DOMPurify 3.4.14 and the trusted component registry.
  * @fires flow:error - Code `template-load-failed`; includes technical details.
@@ -207,29 +216,45 @@ export class ImportHtml extends HTMLElement {
   static observedAttributes = ["src"];
 
   connectedCallback() {
-    if (!this._errorContent) {
-      const errorTemplate = this.querySelector(
-        ":scope > template[data-error-template]",
-      );
-      this._errorContent = errorTemplate?.content.cloneNode(true) || null;
-    }
-    void this.load();
+    this.scheduleLoad();
   }
 
   disconnectedCallback() {
+    clearTimeout(this._loadTimer);
+    this._loadTimer = null;
     this._generation = (this._generation || 0) + 1;
     this.releaseRequest();
   }
 
   attributeChangedCallback() {
-    if (this.isConnected) void this.load();
+    if (this.isConnected) this.scheduleLoad();
+  }
+
+  scheduleLoad() {
+    clearTimeout(this._loadTimer);
+    this._loadTimer = setTimeout(() => {
+      this._loadTimer = null;
+      this.captureErrorContent();
+      void this.load();
+    }, 0);
+  }
+
+  captureErrorContent() {
+    if (this._errorContentCaptured) return;
+    const errorTemplate = this.querySelector(
+      ":scope > template[data-error-template]",
+    );
+    this._errorContent = errorTemplate?.content.cloneNode(true) || null;
+    this._errorContentCaptured = true;
   }
 
   async load() {
+    this.captureErrorContent();
     this.releaseRequest();
     const generation = (this._generation || 0) + 1;
     this._generation = generation;
     this.removeAttribute("error");
+    this.removeAttribute("ready");
     this.setAttribute("loading", "");
 
     try {
