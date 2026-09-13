@@ -2,17 +2,32 @@
   <template>
     <flow-if-open data-flow-resource>
       <template>
-        <import-html src="/templates/discussion/comment.html"></import-html>
+        <import-html src="/templates/discussion/comment.html">
+          <p class="flow-loading-state" data-template-loading>Loading comment...</p>
+          <template data-error-template>
+            <p class="flow-error-state" role="alert">
+              This comment could not be displayed.
+            </p>
+          </template>
+        </import-html>
       </template>
     </flow-if-open>
   </template>
 
   <div class="flow-comment-list" data-items></div>
+  <p class="flow-loading-state" data-loading hidden>Loading discussion...</p>
   <p class="flow-empty-state" data-empty hidden>No open comments found.</p>
-  <p class="flow-error-state" data-error role="alert">
+  <p class="flow-error-state" data-error hidden role="alert">
     Discussion could not be loaded. Try again.
   </p>
+  <p class="flow-error-state" data-cycle hidden role="alert">
+    Discussion pagination stopped because a page repeated.
+  </p>
+  <p class="flow-empty-state" data-capped hidden>
+    Only the first 50 discussion pages are shown.
+  </p>
   <button class="flow-button flow-button-secondary" data-load-more hidden>
-    Load more
+    <span data-load-more-label>Load more</span>
+    <span data-retry-label hidden>Try again</span>
   </button>
 </flow-collection-pages>

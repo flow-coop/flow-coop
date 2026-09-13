@@ -1,95 +1,26 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <title>Flow coop</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/@ionic/core/css/palettes/dark.system.css"
-      rel="stylesheet"
-    />
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.simplecss.org; connect-src 'self' https:; img-src 'self' data: https:; font-src 'self' data: https:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark light" />
-    <script
-      type="module"
-      src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"
-    ></script>
-    <script
-      nomodule=""
-      src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"
-    ></script>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css"
-    />
-    <script
-      type="module"
-      src="https://cdn.jsdelivr.net/npm/@pod-os/elements/dist/elements/elements.esm.js"
-    ></script>
-    <link
-      href="https://cdn.jsdelivr.net/npm/@pod-os/elements/dist/elements/elements.css"
-      rel="stylesheet"
-    />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, minimum-scale=1.0"
-    />
-    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css" />
-    <script src="/components/ImportHtml.js" defer></script>
-    <script src="/components/UpdateLocation.js"></script>
+    <title>Flow coop</title>
+    <link rel="stylesheet" href="/styles/site.css" />
+    <script type="module" src="/components/load.js"></script>
   </head>
   <body>
     <ion-content>
       <pos-app>
         <pos-router mode="pod">
-          <h1>Flow coop</h1>
-          <p>
-            This is the WIP home of the Flow coop, a cooperative building
-            hosting and services where your data flows work for you.
-          </p>
-          <p>It currently hosts discussion pages for data flows.</p>
-          <p>
-            Note: This site is still experimental.
-          </p>
-          <p>
-            The Flow Coop provides a high quality service you would feel
-            comfortable recommending to family and friends. Members work in the
-            open. They experiment to prove value, and plan sustainable
-            investments in services with operating expenses covered on a
-            user-pays opt-in basis. Services are implemented and maintained with
-            high reliability, stability, and user friendliness, putting user
-            trust first.
-          </p>
-          <h2>About</h2>
-          <p>About the coop and this website.</p>
-          <ul>
-            <pos-resource uri="https://flowcoop.eu/about/">
-              <pos-list rel="http://www.w3.org/ns/ldp#contains">
-                <template>
-                  <li>
-                    <pos-rich-link><pos-label></pos-label></pos-rich-link>
-                  </li>
-                </template>
-              </pos-list>
-            </pos-resource>
-          </ul>
-          <h2>Topics</h2>
-          <p>
-            Topic pages provide a flexible infrastructure to describe data flows
-            of value to co-op members and how they are connected.
-          </p>
-          <ul>
-            <pos-resource uri="https://flowcoop.eu/topics/">
-              <pos-list rel="http://www.w3.org/ns/ldp#contains">
-                <template>
-                  <li>
-                    <pos-rich-link><pos-label></pos-label></pos-rich-link>
-                  </li>
-                </template>
-              </pos-list>
-            </pos-resource>
-          </ul>
-          <pos-resource uri="https://flowcoop.eu/index.ttl#it">
-            <import-html src="/templates/discussion/header.html"></import-html>
-            <import-html src="/templates/discussion/outbox.html"></import-html>
+          <pos-resource uri="https://flowcoop.eu/">
+            <import-html src="/index.template.html">
+              <p class="flow-loading-state" data-template-loading>Loading page...</p>
+              <template data-error-template><p class="flow-error-state" role="alert">Page content could not be loaded.</p></template>
+            </import-html>
           </pos-resource>
-        </pos-router> </pos-app
-    ></ion-content>
+        </pos-router>
+      </pos-app>
+    </ion-content>
+  </body>
 </html>

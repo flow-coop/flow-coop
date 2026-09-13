@@ -1,0 +1,99 @@
+<flow-version-context
+  provenance-uri="/topics/task_management/index.ttl"
+>
+  <main class="flow-topic-shell">
+    <p class="flow-loading-state" data-version-loading hidden>Loading page data...</p>
+    <p class="flow-error-state" data-version-error hidden role="alert">Page data could not be loaded.</p>
+    <import-html src="/templates/versions/status.html">
+      <p class="flow-loading-state" data-template-loading>Loading version status...</p>
+      <template data-error-template>
+        <p class="flow-error-state" role="alert">Version status could not be loaded.</p>
+      </template>
+    </import-html>
+    <pos-resource uri="https://flowcoop.eu/topics/task_management/index.ttl#it">
+      <header class="flow-topic-header">
+        <h1><pos-label></pos-label></h1>
+        <blockquote class="flow-topic-summary">
+          <pos-description></pos-description>
+        </blockquote>
+      </header>
+      <pos-switch>
+        <pos-case
+          if-property="https://flowcoop.eu/topics/task_management/index.ttl#contribution"
+        >
+          <template>
+            <section class="flow-topic-section">
+              <h2>Why?</h2>
+              <pos-list
+                rel="https://flowcoop.eu/topics/task_management/index.ttl#contribution"
+              >
+                <template>
+                  <pos-app-document-viewer
+                    class="flow-topic-document"
+                  ></pos-app-document-viewer>
+                </template>
+              </pos-list>
+            </section>
+          </template>
+        </pos-case>
+        <pos-case
+          if-property="https://flowcoop.eu/topics/task_management/index.ttl#flows"
+        >
+          <template>
+            <section class="flow-topic-section">
+              <h2>Flows</h2>
+              <ul class="flow-topic-list">
+                <pos-list
+                  rel="https://flowcoop.eu/topics/task_management/index.ttl#flows"
+                >
+                  <template>
+                    <li>
+                      <strong><pos-label></pos-label></strong>:
+                      <pos-description></pos-description>
+                    </li>
+                  </template>
+                </pos-list>
+              </ul>
+            </section>
+          </template>
+        </pos-case>
+        <pos-case
+          if-property="https://flowcoop.eu/topics/task_management/index.ttl#tools"
+        >
+          <template>
+            <section class="flow-topic-section">
+              <h2>Tools</h2>
+              <ul class="flow-topic-list">
+                <pos-list
+                  rel="https://flowcoop.eu/topics/task_management/index.ttl#tools"
+                >
+                  <template>
+                    <li>
+                      <strong><pos-label></pos-label></strong>:
+                      <pos-description></pos-description>
+                      <pos-rich-link rel="https://schema.org/url">
+                        Open tool
+                      </pos-rich-link>
+                    </li>
+                  </template>
+                </pos-list>
+              </ul>
+            </section>
+          </template>
+        </pos-case>
+      </pos-switch>
+      <import-html src="/templates/discussion/section.html">
+        <p class="flow-loading-state" data-template-loading>Loading discussion...</p>
+        <template data-error-template>
+          <p class="flow-error-state" role="alert">Discussion could not be loaded.</p>
+        </template>
+      </import-html>
+    </pos-resource>
+    <import-html src="/templates/changes.html">
+      <p class="flow-loading-state" data-template-loading>Loading changes...</p>
+      <template data-error-template>
+        <p class="flow-error-state" role="alert">Changes could not be loaded.</p>
+      </template>
+    </import-html>
+  </main>
+</flow-version-context>

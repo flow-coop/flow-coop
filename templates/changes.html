@@ -1,66 +1,37 @@
-<details class="flow-changes" open>
-  <summary>Changes</summary>
-  <pos-switch>
-    <pos-case if-property="http://www.w3.org/ns/prov#wasGeneratedBy">
-      <template>
-        <pos-list rel="http://www.w3.org/ns/prov#wasGeneratedBy" fetch>
+<flow-version-ready>
+  <p class="flow-loading-state" data-version-waiting>Loading changes...</p>
+  <template>
+    <details class="flow-changes" open>
+      <summary>Changes</summary>
+      <div class="flow-change-activities">
+        <flow-version-activities>
           <template>
-            <section class="flow-change-group">
-              <article class="flow-change-card">
-                <h3>Activity: <pos-label></pos-label></h3>
-                <dl class="flow-change-metadata">
-                  <div>
-                    <dt>Source activity</dt>
-                    <dd><pos-rich-link>Open source activity</pos-rich-link></dd>
-                  </div>
-                  <div>
-                    <dt>Generated resource</dt>
-                    <dd>
-                      <pos-list rel="http://www.w3.org/ns/prov#generated">
-                        <template><pos-rich-link></pos-rich-link></template>
-                      </pos-list>
-                    </dd>
-                  </div>
-                </dl>
-              </article>
-
-              <h3 class="flow-change-inputs-title">
-                Content incorporated into this version
-              </h3>
-              <div class="flow-change-inputs">
-                <pos-list rel="http://www.w3.org/ns/prov#used">
-                  <template>
-                    <pos-switch>
-                      <pos-case
-                        if-typeof="https://www.w3.org/ns/activitystreams#Note"
-                      >
-                        <template>
-                          <import-html
-                            src="/templates/discussion/comment.html"
-                          ></import-html>
-                        </template>
-                      </pos-case>
-                      <pos-case else>
-                        <template>
-                          <article class="flow-change-resource">
-                            <h4>Previous version or source</h4>
-                            <pos-rich-link></pos-rich-link>
-                          </article>
-                        </template>
-                      </pos-case>
-                    </pos-switch>
-                  </template>
-                </pos-list>
-              </div>
-            </section>
+            <pos-resource data-version-activity>
+              <import-html src="/templates/activity-changes.html">
+                <p class="flow-loading-state" data-template-loading>
+                  Loading activity...
+                </p>
+                <template data-error-template>
+                  <p class="flow-error-state" role="alert">
+                    This activity could not be displayed.
+                  </p>
+                </template>
+              </import-html>
+            </pos-resource>
           </template>
-        </pos-list>
-      </template>
-    </pos-case>
-    <pos-case else>
-      <template>
-        <p class="flow-empty-state">No provenance was recorded for this version.</p>
-      </template>
-    </pos-case>
-  </pos-switch>
-</details>
+          <p class="flow-empty-state" data-empty hidden>
+            No provenance was recorded for this version.
+          </p>
+          <p class="flow-error-state" data-error hidden role="alert">
+            Changes could not be displayed.
+          </p>
+        </flow-version-activities>
+      </div>
+    </details>
+  </template>
+  <template data-error-template>
+    <p class="flow-error-state" role="alert">
+      Changes could not be loaded because the version data is unavailable.
+    </p>
+  </template>
+</flow-version-ready>

@@ -1,4 +1,5 @@
 import { ReceiveResourceOS } from "./ReceiveResourceOS.js";
+import { requestVersionContext } from "./requestVersionContext.js";
 
 const AS_PREFERRED_USERNAME =
   "https://www.w3.org/ns/activitystreams#preferredUsername";
@@ -134,6 +135,19 @@ function matchingSubject(actual, account) {
   return actual.toLowerCase() === account.resource.toLowerCase();
 }
 
+/**
+ * Connects a PodOS RDF resource to a WebFinger-advertised Fediverse action.
+ *
+ * @customElement flow-fediverse-interaction
+ * @attr {string} mode - `contribute` for a topic actor or `reply` for a Note.
+ * @dependency Inherits an actor or Note resource and OS store through PodOS.
+ * Contributions require an ancestor `flow-version-context`; its resolved
+ * version URI is requested through `flow:request-version-context`.
+ * @slot - Authored trigger, dialog, states, fallbacks, and error messages.
+ * @fires flow:error - Codes cover validation, discovery, safety, clipboard,
+ * and missing version-context errors.
+ * @example <flow-fediverse-interaction mode="reply"><button data-trigger>Reply</button></flow-fediverse-interaction>
+ */
 export class FlowFediverseInteraction extends ReceiveResourceOS {
   connectedCallback() {
     super.connectedCallback();
@@ -258,12 +272,12 @@ export class FlowFediverseInteraction extends ReceiveResourceOS {
     input?.focus();
   }
 
-  interactionValues(mode) {
+  async interactionValues(mode) {
     if (!this.resource?.uri) {
       throw new Error("Interaction resource is not available.");
     }
     if (mode === "reply") return { object: this.resource.uri };
-    const versionUri = this.closest("flow-version-context")?.getAttribute("uri");
+    const { versionUri } = await requestVersionContext(this);
     if (!versionUri) throw new Error("Version context is not available.");
     const preferredUsername = this.resource.anyValue(AS_PREFERRED_USERNAME);
     const actor = safeHttpUrl(this.resource.uri);
@@ -292,7 +306,7 @@ export class FlowFediverseInteraction extends ReceiveResourceOS {
     }
     let values;
     try {
-      values = this.interactionValues(mode);
+      values = await this.interactionValues(mode);
     } catch (error) {
       this.reportError("missing-context", error);
       return false;

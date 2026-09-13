@@ -19,7 +19,14 @@
     <flow-sanitized-content
       class="flow-comment-content"
       predicate="https://www.w3.org/ns/activitystreams#content"
-    ></flow-sanitized-content>
+    >
+      <p class="flow-loading-state" data-content-loading>Loading comment...</p>
+      <template data-error-template>
+        <p class="flow-error-state" role="alert">
+          Comment content could not be displayed.
+        </p>
+      </template>
+    </flow-sanitized-content>
 
     <footer class="flow-comment-actions">
       <button class="flow-button flow-button-secondary" data-trigger type="button">

@@ -1,0 +1,46 @@
+<flow-version-context provenance-uri="https://flowcoop.eu/about/flows/index.ttl">
+  <main class="flow-site-shell">
+    <p class="flow-loading-state" data-version-loading hidden>Loading page data...</p>
+    <p class="flow-error-state" data-version-error hidden role="alert">Page data could not be loaded.</p>
+    <h1>About Flow: Flows</h1>
+    <p>
+      Flows involve interactions with data that provide value to co-op members.
+      Flows are connected through <a href="/about/topics/">topics</a> and are
+      implemented through one or more <a href="/about/tools/">tools</a>.
+    </p>
+    <p>
+      Pages about flows can be subscribed to, and you can join the discussion
+      using an ActivityPub client, e.g. Mastodon.
+    </p>
+    <p>A flow might be implemented as an app, a data import or export, or an agent.</p>
+    <p>
+      A flow is an action on data that should be described at a level a user can
+      understand. It has to be something that they are able to make a decision
+      to turn on/off, use or not use.
+    </p>
+    <h2>Existing flows</h2>
+    <ul>
+      <pos-resource uri="https://flowcoop.eu/flows/">
+        <pos-list rel="http://www.w3.org/ns/ldp#contains">
+          <template>
+            <li><pos-rich-link><pos-label></pos-label></pos-rich-link></li>
+          </template>
+        </pos-list>
+      </pos-resource>
+    </ul>
+    <pos-resource uri="https://flowcoop.eu/about/flows/index.ttl#it">
+      <import-html src="/templates/discussion/section.html">
+        <p class="flow-loading-state" data-template-loading>Loading discussion...</p>
+        <template data-error-template>
+          <p class="flow-error-state" role="alert">Discussion could not be loaded.</p>
+        </template>
+      </import-html>
+    </pos-resource>
+    <import-html src="/templates/changes.html">
+      <p class="flow-loading-state" data-template-loading>Loading changes...</p>
+      <template data-error-template>
+        <p class="flow-error-state" role="alert">Changes could not be loaded.</p>
+      </template>
+    </import-html>
+  </main>
+</flow-version-context>

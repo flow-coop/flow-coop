@@ -1,5 +1,19 @@
 import { ReceiveResourceOS } from "./ReceiveResourceOS.js";
+import { requestVersionContext } from "./requestVersionContext.js";
 
+/**
+ * Renders its direct template only when the inherited RDF resource is unused.
+ *
+ * @customElement flow-if-open
+ * @attr {string} uri - Optional resource URI overriding the PodOS resource.
+ * @dependency Inherits its Note resource through PodOS and requires an ancestor
+ * `flow-version-context`, requested through `flow:request-version-context`.
+ * @slot - A direct template containing the content rendered for an open item.
+ * @fires flow:open-state - Reports whether the resource is open or failed.
+ * @fires flow:error - Code `version-context-unavailable` reports missing or
+ * failed version context and evaluation failures; the item fails closed.
+ * @example <flow-if-open uri="https://example.test/note"><template>Open</template></flow-if-open>
+ */
 export class FlowIfOpen extends ReceiveResourceOS {
   constructor() {
     super();
@@ -40,7 +54,7 @@ export class FlowIfOpen extends ReceiveResourceOS {
     this.setAttribute("loading", "");
 
     try {
-      const context = await this.requestVersionContext();
+      const context = await requestVersionContext(this);
       if (generation !== this._generation) return;
       const open = !context.usedUris.has(resourceUri);
       this.removeAttribute("loading");
@@ -59,31 +73,22 @@ export class FlowIfOpen extends ReceiveResourceOS {
       this.setAttribute("error", "");
       this.clearRenderedNodes();
       this.dispatchEvent(
+        new CustomEvent("flow:open-state", {
+          bubbles: true,
+          detail: { uri: resourceUri, open: false, error },
+        }),
+      );
+      this.dispatchEvent(
         new CustomEvent("flow:error", {
           bubbles: true,
-          detail: { component: "flow-if-open", error },
+          detail: {
+            component: "flow-if-open",
+            code: "version-context-unavailable",
+            error,
+          },
         }),
       );
     }
-  }
-
-  requestVersionContext() {
-    return new Promise((resolve, reject) => {
-      let supplied = false;
-      const event = new CustomEvent("flow:request-version-context", {
-        bubbles: true,
-        composed: true,
-        detail: {
-          resolve: (contextPromise) => {
-            supplied = true;
-            Promise.resolve(contextPromise).then(resolve, reject);
-          },
-        },
-      });
-      this.dispatchEvent(event);
-      if (!supplied)
-        reject(new Error("No flow-version-context ancestor found."));
-    });
   }
 
   render(open) {

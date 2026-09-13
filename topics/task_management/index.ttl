@@ -1,5 +1,105 @@
+@prefix as: <https://www.w3.org/ns/activitystreams#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix schema: <https://schema.org/>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://flowcoop.eu/topics/task_management/>
+    prov:wasGeneratedBy <https://flowcoop.eu/topics/task_management/index.ttl#migration>.
+
+<https://flowcoop.eu/topics/task_management/index.ttl#migration> a prov:Activity;
+    schema:name "Migrate the task management draft to Flow UI";
+    prov:generated <https://flowcoop.eu/topics/task_management/>;
+    prov:used
+        <https://flow.solidcommunity.net/topics/task_management/history/draft/>,
+        <https://mastodon.social/users/jg10/statuses/117116262041398775>,
+        <https://mastodon.social/users/jg10/statuses/117116293386353207>,
+        <https://mastodon.social/users/jg10/statuses/117116304491150823>,
+        <https://mastodon.social/users/jg10/statuses/117133369969380514>,
+        <https://mastodon.social/users/jg10/statuses/117133374863355352>,
+        <https://mastodon.social/users/jg10/statuses/117133378229611560>,
+        <https://mastodon.social/users/jg10/statuses/117133392772393654>,
+        <https://mastodon.social/users/jg10/statuses/117133425566377347>.
+
+<https://flow.solidcommunity.net/topics/task_management/history/2026/08/22-115200/>
+    prov:wasGeneratedBy <https://flow.solidcommunity.net/topics/task_management/history/changelog/1.ttl#1>.
+
+<https://flow.solidcommunity.net/topics/task_management/history/2026/08/23-064400/>
+    prov:wasGeneratedBy <https://flow.solidcommunity.net/topics/task_management/history/changelog/1.ttl#2>.
+
+<https://flow.solidcommunity.net/topics/task_management/history/draft/>
+    prov:wasGeneratedBy <https://flow.solidcommunity.net/topics/task_management/history/changelog/1.ttl#3>.
+
+<https://flow.solidcommunity.net/topics/task_management/history/changelog/1.ttl#1>
+    a prov:Activity;
+    rdfs:label "Initial save";
+    prov:wasAssociatedWith <https://mastodon.social/users/jg10>;
+    prov:generated <https://flow.solidcommunity.net/topics/task_management/history/2026/08/22-115200/>.
+
+<https://flow.solidcommunity.net/topics/task_management/history/changelog/1.ttl#2>
+    a prov:Activity;
+    rdfs:label "Add to why and flows";
+    prov:wasAssociatedWith <https://mastodon.social/users/jg10>;
+    prov:generated <https://flow.solidcommunity.net/topics/task_management/history/2026/08/23-064400/>;
+    prov:used
+        <https://flow.solidcommunity.net/topics/task_management/history/2026/08/22-115200/>,
+        <https://mastodon.social/users/jg10/statuses/117116262041398775>,
+        <https://mastodon.social/users/jg10/statuses/117116293386353207>,
+        <https://mastodon.social/users/jg10/statuses/117133369969380514>,
+        <https://mastodon.social/users/jg10/statuses/117133374863355352>,
+        <https://mastodon.social/users/jg10/statuses/117133378229611560>,
+        <https://mastodon.social/users/jg10/statuses/117133392772393654>.
+
+<https://flow.solidcommunity.net/topics/task_management/history/changelog/1.ttl#3>
+    a prov:Activity;
+    rdfs:label "Added tools";
+    prov:generated <https://flow.solidcommunity.net/topics/task_management/history/draft/>;
+    prov:used
+        <https://flow.solidcommunity.net/topics/task_management/history/2026/08/23-064400/>,
+        <https://mastodon.social/users/jg10/statuses/117116304491150823>,
+        <https://mastodon.social/users/jg10/statuses/117133425566377347>.
+
+<https://mastodon.social/users/jg10> schema:name "JG10".
+
+<https://mastodon.social/users/jg10/statuses/117116262041398775> a as:Note;
+    as:published "2026-08-18T11:25:38Z"^^xsd:dateTime;
+    as:attributedTo <https://mastodon.social/users/jg10>;
+    as:content """<p><span class="h-card" translate="no"><a href="https://flow-coop.netlify.app/task_management" class="u-url mention">@<span>task_management</span></a></span> Controlling or coordinating activities and their outcomes might contribute to your feeling of agency, and control over life.</p>""".
+
+<https://mastodon.social/users/jg10/statuses/117116293386353207> a as:Note;
+    as:published "2026-08-18T11:33:36Z"^^xsd:dateTime;
+    as:attributedTo <https://mastodon.social/users/jg10>;
+    as:content """<p><span class="h-card" translate="no"><a href="https://flow-coop.netlify.app/task_management" class="u-url mention">@<span>task_management</span></a></span> Task management might also help get things done more efficiently. Some task management data flows might be more convenient or support decision making. Some tasks might help provide a more comfortable life.</p>""".
+
+<https://mastodon.social/users/jg10/statuses/117116304491150823> a as:Note;
+    as:published "2026-08-18T11:36:26Z"^^xsd:dateTime;
+    as:attributedTo <https://mastodon.social/users/jg10>;
+    as:content """<p><span class="h-card" translate="no"><a href="https://flow-coop.netlify.app/task_management" class="u-url mention">@<span>task_management</span></a></span> <a href="https://github.com/NoelDeMartin/solid-focus" target="_blank" rel="nofollow noopener" translate="no"><span class="invisible">https://</span><span class="ellipsis">github.com/NoelDeMartin/solid-</span><span class="invisible">focus</span></a> provides task lists. Notes functionality allows the user to make connections and include links associated with the task.</p>""".
+
+<https://mastodon.social/users/jg10/statuses/117133369969380514> a as:Note;
+    as:published "2026-08-21T11:56:24Z"^^xsd:dateTime;
+    as:attributedTo <https://mastodon.social/users/jg10>;
+    as:content """<p><span class="h-card" translate="no"><a href="https://flow-coop.netlify.app/task_management" class="u-url mention">@<span>task_management</span></a></span> A task manager helps you organise a list of tasks that you want to track. This includes adding new tasks, prioritising them, and marking them as done.</p>""".
+
+<https://mastodon.social/users/jg10/statuses/117133374863355352> a as:Note;
+    as:published "2026-08-21T11:57:39Z"^^xsd:dateTime;
+    as:attributedTo <https://mastodon.social/users/jg10>;
+    as:content """<p><span class="h-card" translate="no"><a href="https://flow-coop.netlify.app/task_management" class="u-url mention">@<span>task_management</span></a></span> Booking appointments involves scheduling a meeting with someone for a specific task, considering both of your calendars.</p>""".
+
+<https://mastodon.social/users/jg10/statuses/117133378229611560> a as:Note;
+    as:published "2026-08-21T11:58:30Z"^^xsd:dateTime;
+    as:attributedTo <https://mastodon.social/users/jg10>;
+    as:content """<p><span class="h-card" translate="no"><a href="https://flow-coop.netlify.app/task_management" class="u-url mention">@<span>task_management</span></a></span> Kanban helps progress tasks along a workflow.</p>""".
+
+<https://mastodon.social/users/jg10/statuses/117133392772393654> a as:Note;
+    as:published "2026-08-21T12:02:12Z"^^xsd:dateTime;
+    as:attributedTo <https://mastodon.social/users/jg10>;
+    as:content """<p><span class="h-card" translate="no"><a href="https://flow-coop.netlify.app/task_management" class="u-url mention">@<span>task_management</span></a></span> Event reminders give you with peace of mind that you&#39;ll remember tasks, and reduce mental load required to keep track of them.</p>""".
+
+<https://mastodon.social/users/jg10/statuses/117133425566377347> a as:Note;
+    as:published "2026-08-21T12:10:32Z"^^xsd:dateTime;
+    as:attributedTo <https://mastodon.social/users/jg10>;
+    as:content """<p><span class="h-card" translate="no"><a href="https://flow-coop.netlify.app/task_management" class="u-url mention">@<span>task_management</span></a></span> And task management more generally: <a href="https://alternativeto.net/browse/all/?tag=task-management" target="_blank" rel="nofollow noopener" translate="no"><span class="invisible">https://</span><span class="ellipsis">alternativeto.net/browse/all/?</span><span class="invisible">tag=task-management</span></a></p>""".
 
 <#it> <https://schema.org/name> "Task management";
     <https://schema.org/description> "When managing tasks, flows can support you in controlling or coordinating a set of activities and their outcomes.";

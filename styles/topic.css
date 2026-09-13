@@ -1,91 +1,21 @@
-:root {
-  color-scheme: light dark;
-  --flow-page: #f4f6f5;
-  --flow-surface: #ffffff;
-  --flow-surface-raised: #eef3f1;
-  --flow-text: #17201f;
-  --flow-muted: #5e6a68;
-  --flow-border: #cbd6d2;
-  --flow-accent: #087f75;
-  --flow-accent-strong: #05645d;
-  --flow-accent-text: #ffffff;
-  --flow-warm: #b56b00;
-  --flow-error: #a42d2d;
-  --flow-shadow: 0 10px 24px rgb(20 40 36 / 8%);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --flow-page: #101416;
-    --flow-surface: #1b2427;
-    --flow-surface-raised: #222e31;
-    --flow-text: #f3f6f5;
-    --flow-muted: #afbcba;
-    --flow-border: #3d4d4b;
-    --flow-accent: #63d6ca;
-    --flow-accent-strong: #87e5dc;
-    --flow-accent-text: #08211e;
-    --flow-warm: #f2b84b;
-    --flow-error: #ff9898;
-    --flow-shadow: 0 12px 28px rgb(0 0 0 / 28%);
-  }
-}
-
-html,
-body {
-  min-width: 0;
-  margin: 0;
-  background: var(--flow-page);
-  color: var(--flow-text);
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  line-height: 1.55;
-}
-
-body {
-  overflow-x: hidden;
-}
-
-ion-content {
-  --background: var(--flow-page);
-  --color: var(--flow-text);
-}
-
-ion-content::part(scroll) {
-  overflow-x: hidden;
-}
+@import url("https://cdn.jsdelivr.net/npm/@ionic/core@9.0.0/css/palettes/dark.system.css");
+@import url("https://cdn.jsdelivr.net/npm/@ionic/core@9.0.0/css/ionic.bundle.css");
+@import url("https://cdn.jsdelivr.net/npm/@pod-os/elements@0.43.0/dist/elements/elements.css");
+@import url("./shared.css");
 
 .flow-topic-shell,
 .flow-topic-shell *,
 .flow-topic-shell *::before,
-.flow-topic-shell *::after {
-  box-sizing: border-box;
-  min-width: 0;
-}
+.flow-topic-shell *::after { box-sizing: border-box; min-width: 0; }
 
 .flow-topic-shell {
-  width: min(100%, 58rem);
+  width: 100%;
+  max-width: min(58rem, 100vw);
   margin-inline: auto;
   padding: 2.5rem 1.5rem 5rem;
 }
 
-flow-version-context,
-flow-collection-pages,
-flow-sanitized-content,
-flow-fediverse-interaction,
-import-html {
-  display: block;
-}
-
-flow-if-open {
-  display: contents;
-}
-
-.flow-topic-header {
-  margin-block-end: 2.75rem;
-}
-
+.flow-topic-header { margin-block-end: 2.75rem; }
 .flow-topic-header h1 {
   max-width: 14ch;
   margin: 0 0 1rem;
@@ -94,7 +24,6 @@ flow-if-open {
   line-height: 1.05;
   letter-spacing: 0;
 }
-
 .flow-topic-summary {
   margin: 0;
   padding: 1rem 1.25rem;
@@ -102,409 +31,23 @@ flow-if-open {
   color: var(--flow-muted);
   font-size: 1.1rem;
 }
-
-.flow-topic-section {
-  margin-block: 2.5rem;
-}
-
-.flow-topic-section h2,
-.flow-discussion-header h2 {
+.flow-topic-section { margin-block: 2.5rem; }
+.flow-topic-section h2 {
   margin: 0 0 0.65rem;
   color: var(--flow-text);
   font-size: 1.75rem;
   line-height: 1.2;
   letter-spacing: 0;
 }
-
 .flow-topic-list {
   display: grid;
   gap: 0.65rem;
   margin: 0;
   padding-inline-start: 1.35rem;
 }
-
-.flow-topic-document {
-  display: block;
-  width: 100%;
-  overflow-wrap: anywhere;
-}
-
-.flow-discussion {
-  margin-block: 3.5rem;
-}
-
-.flow-discussion-header {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 1.5rem;
-  margin-block-end: 1.25rem;
-  padding-block-end: 1.25rem;
-  border-block-end: 1px solid var(--flow-border);
-}
-
-.flow-discussion-header p {
-  max-width: 58ch;
-  margin: 0;
-  color: var(--flow-muted);
-}
-
-.flow-button {
-  display: inline-flex;
-  min-height: 2.75rem;
-  align-items: center;
-  justify-content: center;
-  padding: 0.65rem 1rem;
-  border: 1px solid var(--flow-border);
-  border-radius: 6px;
-  font: inherit;
-  font-weight: 700;
-  line-height: 1.2;
-  text-align: center;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.flow-button-primary {
-  border-color: var(--flow-accent);
-  background: var(--flow-accent);
-  color: var(--flow-accent-text);
-}
-
-.flow-button-secondary {
-  background: transparent;
-  color: var(--flow-accent-strong);
-}
-
-.flow-button:hover,
-.flow-button:focus-visible {
-  outline: 2px solid var(--flow-accent);
-  outline-offset: 2px;
-}
-
-.flow-button:disabled {
-  cursor: wait;
-  opacity: 0.6;
-}
-
-.flow-link-button {
-  align-self: center;
-  padding: 0.4rem;
-  border: 0;
-  background: transparent;
-  color: var(--flow-accent-strong);
-  font: inherit;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.flow-link-button:hover,
-.flow-link-button:focus-visible {
-  outline: 2px solid var(--flow-accent);
-  outline-offset: 2px;
-}
-
-.flow-interaction-dialog {
-  width: min(calc(100% - 2rem), 34rem);
-  max-height: calc(100% - 2rem);
-  padding: 0;
-  overflow: auto;
-  border: 1px solid var(--flow-border);
-  border-radius: 8px;
-  background: var(--flow-surface);
-  box-shadow: 0 18px 48px rgb(0 0 0 / 32%);
-  color: var(--flow-text);
-}
-
-.flow-interaction-dialog::backdrop {
-  background: rgb(8 18 18 / 68%);
-}
-
-.flow-interaction-dialog-body {
-  display: grid;
-  gap: 1rem;
-  padding: 1.35rem;
-}
-
-.flow-interaction-dialog header h3 {
-  margin: 0 0 0.35rem;
-  font-size: 1.3rem;
-  line-height: 1.25;
-}
-
-.flow-interaction-dialog header p,
-.flow-interaction-status,
-.flow-interaction-errors p,
-.flow-interaction-fallback p,
-.flow-interaction-copied {
-  margin: 0;
-}
-
-.flow-interaction-dialog header p,
-.flow-interaction-status {
-  color: var(--flow-muted);
-}
-
-.flow-interaction-field {
-  display: grid;
-  gap: 0.4rem;
-  font-weight: 700;
-}
-
-.flow-interaction-field input {
-  width: 100%;
-  min-height: 2.75rem;
-  padding: 0.65rem 0.75rem;
-  border: 1px solid var(--flow-border);
-  border-radius: 6px;
-  background: var(--flow-page);
-  color: var(--flow-text);
-  font: inherit;
-}
-
-.flow-interaction-field input:focus-visible {
-  outline: 2px solid var(--flow-accent);
-  outline-offset: 2px;
-}
-
-.flow-interaction-errors {
-  color: var(--flow-error);
-}
-
-.flow-interaction-fallback {
-  display: grid;
-  gap: 0.75rem;
-  padding: 1rem;
-  border: 1px dashed var(--flow-border);
-  border-radius: 6px;
-  background: var(--flow-surface-raised);
-}
-
-.flow-interaction-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-}
-
-.flow-interaction-copied {
-  display: none;
-  color: var(--flow-accent-strong);
-}
-
-flow-fediverse-interaction[copied] .flow-interaction-copied {
-  display: block;
-}
-
-.flow-comment-list,
-.flow-change-inputs > pos-list {
-  display: grid;
-  gap: 1rem;
-}
-
-.flow-comment-card {
-  width: 100%;
-  margin: 0;
-  padding: 1.2rem;
-  overflow: hidden;
-  border: 1px solid var(--flow-border);
-  border-inline-start: 4px solid var(--flow-accent);
-  border-radius: 8px;
-  background: var(--flow-surface);
-  box-shadow: var(--flow-shadow);
-  color: var(--flow-text);
-}
-
-.flow-comment-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.4rem 0.85rem;
-  margin-block-end: 1rem;
-  color: var(--flow-muted);
-  font-size: 0.9rem;
-}
-
-.flow-comment-source,
-.flow-comment-card a,
-.flow-change-card a,
-.flow-change-resource a {
-  color: var(--flow-accent-strong);
-  overflow-wrap: anywhere;
-}
-
-.flow-comment-source {
-  font-weight: 700;
-}
-
-.flow-comment-date {
-  margin-inline-start: auto;
-}
-
-.flow-comment-content {
-  font-size: 1.05rem;
-  overflow-wrap: anywhere;
-}
-
-.flow-comment-content > :first-child {
-  margin-block-start: 0;
-}
-
-.flow-comment-content > :last-child {
-  margin-block-end: 0;
-}
-
-.flow-comment-actions {
-  margin-block-start: 1.15rem;
-}
-
-.flow-empty-state,
-.flow-error-state,
-[data-template-error] {
-  margin: 1rem 0;
-  padding: 1rem;
-  border: 1px dashed var(--flow-border);
-  border-radius: 6px;
-  color: var(--flow-muted);
-}
-
-.flow-error-state,
-[data-template-error] {
-  color: var(--flow-error);
-}
-
-[data-error] {
-  display: none;
-}
-
-flow-collection-pages[error] [data-error] {
-  display: block;
-}
-
-flow-collection-pages > [data-load-more] {
-  margin-block-start: 1rem;
-}
-
-.flow-changes {
-  margin-block-start: 4rem;
-  padding-block-start: 1.5rem;
-  border-block-start: 1px solid var(--flow-border);
-}
-
-.flow-changes > summary {
-  color: var(--flow-text);
-  font-size: 1.35rem;
-  font-weight: 750;
-  cursor: pointer;
-}
-
-.flow-change-group {
-  display: grid;
-  gap: 1.25rem;
-  margin-block-start: 1.25rem;
-}
-
-.flow-change-card,
-.flow-change-resource {
-  width: 100%;
-  margin: 0;
-  padding: 1.15rem;
-  overflow: hidden;
-  border: 1px solid var(--flow-border);
-  border-radius: 8px;
-  background: var(--flow-surface-raised);
-  color: var(--flow-text);
-}
-
-.flow-change-card h3,
-.flow-change-resource h4,
-.flow-change-inputs-title {
-  margin: 0 0 0.85rem;
-  color: var(--flow-text);
-  font-size: 1.05rem;
-  line-height: 1.3;
-  letter-spacing: 0;
-}
-
-.flow-change-metadata {
-  display: grid;
-  gap: 0.9rem;
-  margin: 0;
-}
-
-.flow-change-metadata div {
-  display: grid;
-  grid-template-columns: minmax(8rem, 0.28fr) minmax(0, 1fr);
-  gap: 0.75rem;
-}
-
-.flow-change-metadata dt {
-  color: var(--flow-muted);
-  font-weight: 700;
-}
-
-.flow-change-metadata dd {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-
-.flow-change-inputs-title {
-  margin-block-start: 1rem;
-  font-size: 1.3rem;
-}
-
-[hidden] {
-  display: none !important;
-}
+.flow-topic-document { display: block; width: 100%; overflow-wrap: anywhere; }
 
 @media (max-width: 40rem) {
-  .flow-topic-shell {
-    padding: 1.5rem 1rem 3.5rem;
-  }
-
-  .flow-topic-header h1 {
-    font-size: 2.25rem;
-  }
-
-  .flow-discussion-header {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .flow-discussion-header .flow-button,
-  .flow-comment-actions .flow-button {
-    width: 100%;
-  }
-
-  .flow-comment-meta {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .flow-comment-date {
-    margin-inline-start: 0;
-  }
-
-  .flow-interaction-dialog {
-    width: calc(100% - 1rem);
-    max-height: calc(100% - 1rem);
-  }
-
-  .flow-interaction-dialog-body {
-    padding: 1rem;
-  }
-
-  .flow-interaction-actions {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .flow-interaction-actions .flow-button,
-  .flow-interaction-actions .flow-link-button {
-    width: 100%;
-  }
-
-  .flow-change-metadata div {
-    grid-template-columns: 1fr;
-    gap: 0.2rem;
-  }
+  .flow-topic-shell { padding: 1.5rem 1rem 3.5rem; }
+  .flow-topic-header h1 { font-size: 2.25rem; }
 }
