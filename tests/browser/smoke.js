@@ -1,7 +1,7 @@
 const allRoutes = [
-  { path: "/", discussion: true, text: ["Flow coop", "About", "Topics"] },
-  { path: "/about/flows/", text: ["About Flow: Flows", "Existing flows", "Changes"] },
-  { path: "/about/tools/", text: ["About Flow: Tools", "Changes"] },
+  { path: "/", discussion: true, comments: true, text: ["Flow coop", "About", "Topics"] },
+  { path: "/about/flows/", discussion: true, comments: true, text: ["About Flow: Flows", "Existing flows", "Changes"] },
+  { path: "/about/tools/", discussion: true, comments: true, text: ["About Flow: Tools", "Changes"] },
   { path: "/about/topics/", discussion: true, comments: true, text: ["About Flow: Topics", "Proposed topics", "Open discussion", "Contribute from the Fediverse", "Reply from the Fediverse", "Changes"] },
   { path: "/topics/task_management/", discussion: true, comments: true, taskHistory: true, text: ["This version", "Task management", "Why?", "Flows", "Tools", "Open discussion", "Contribute from the Fediverse", "Reply from the Fediverse", "Changes"] },
 ];
