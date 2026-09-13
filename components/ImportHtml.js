@@ -201,7 +201,7 @@ export function validatedTemplateFragment(html, sourceUrl, purifier = DOMPurify)
  * @slot - A direct `template[data-error-template]` rendered after failure.
  * @dependency DOMPurify 3.4.14 and the trusted component registry.
  * @fires flow:error - Code `template-load-failed`; includes technical details.
- * @example <import-html src="/templates/pages/home.html"><template data-error-template><p role="alert">Page unavailable.</p></template></import-html>
+ * @example <import-html src="/index.template.html"><template data-error-template><p role="alert">Page unavailable.</p></template></import-html>
  */
 export class ImportHtml extends HTMLElement {
   static observedAttributes = ["src"];

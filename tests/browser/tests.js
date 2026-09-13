@@ -187,11 +187,11 @@ await test("every shipped template passes the shared sanitizer policy", async ()
     "/templates/discussion/header.html",
     "/templates/discussion/outbox.html",
     "/templates/discussion/section.html",
-    "/templates/pages/home.html",
-    "/templates/pages/about-flows.html",
-    "/templates/pages/about-tools.html",
-    "/templates/pages/about-topics.html",
-    "/templates/pages/topic-task-management.html",
+    "/index.template.html",
+    "/about/flows/index.template.html",
+    "/about/tools/index.template.html",
+    "/about/topics/index.template.html",
+    "/topics/task_management/index.template.html",
     "/templates/versions/status.html",
   ];
   for (const path of paths) {
@@ -252,7 +252,7 @@ await test("explicit version activity excludes stale root activities", async () 
 });
 
 await test("task Changes stays independent when its outbox fails", async () => {
-  const path = "/templates/pages/topic-task-management.html";
+  const path = "/topics/task_management/index.template.html";
   const response = await fetch(path);
   const fragment = validatedTemplateFragment(
     await response.text(),
