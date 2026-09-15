@@ -6,173 +6,125 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' https:; img-src 'self' data: https:; font-src 'self' data: https:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
     />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="dark light" />
-    <title>Task Management</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/@ionic/core@9.0.0/css/palettes/dark.system.css"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@ionic/core@9.0.0/css/ionic.bundle.css"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/@pod-os/elements@0.43.0/dist/elements/elements.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/styles/topic.css" />
-    <script
-      type="module"
-      src="https://cdn.jsdelivr.net/npm/@ionic/core@9.0.0/dist/ionic/ionic.esm.js"
-    ></script>
-    <script
-      nomodule
-      src="https://cdn.jsdelivr.net/npm/@ionic/core@9.0.0/dist/ionic/ionic.js"
-    ></script>
-    <script
-      type="module"
-      src="https://cdn.jsdelivr.net/npm/@pod-os/elements@0.43.0/dist/elements/elements.esm.js"
-    ></script>
-    <script
-      src="/components/vendor/DOMPurify-3.4.14.min.js"
-      integrity="sha384-46dPGH1XlTmj7bc50bqLjTdORXs/3EP2QpA/6EWbelYWOY9VGp+87RT61S3Mcslb"
-    ></script>
-    <script type="module" src="/components/ImportHtml.js?version=20260905-3"></script>
-    <script type="module" src="/components/FlowVersionContext.js"></script>
-    <script type="module" src="/components/FlowIfOpen.js"></script>
-    <script type="module" src="/components/FlowCollectionPages.js"></script>
-    <script type="module" src="/components/FlowSanitizedContent.js"></script>
-    <script
-      type="module"
-      src="/components/FlowFediverseInteraction.js"
-    ></script>
-    <script type="module" src="/components/UpdateLocation.js"></script>
+    <script type="module" src="/components/load.js"></script>
+    <flow-head title="Task Management"></flow-head>
+
   </head>
   <body>
-    <ion-content>
-      <pos-app>
-        <pos-router mode="pod">
-          <flow-version-context
-            uri="https://flowcoop.eu/topics/task_management/"
+    <flow-page uri="https://flowcoop.eu/topics/task_management/">
+      <pos-resource
+        uri="https://flowcoop.eu/topics/task_management/"
+      >
+        <import-html src="/templates/versions/status.html"></import-html>
+      </pos-resource>
+      <pos-resource
+        uri="https://flowcoop.eu/topics/task_management/index.ttl#it"
+      >
+        <header class="flow-header">
+          <h1><pos-label></pos-label></h1>
+          <blockquote class="flow-topic-summary">
+            <pos-description></pos-description>
+          </blockquote>
+        </header>
+        <pos-switch>
+          <pos-case
+            if-property="https://flowcoop.eu/topics/task_management/index.ttl#contribution"
           >
-            <main class="flow-topic-shell">
-              <pos-resource
-                uri="https://flowcoop.eu/topics/task_management/"
-              >
-                <import-html src="/templates/versions/status.html"></import-html>
-              </pos-resource>
-              <pos-resource
-                uri="https://flowcoop.eu/topics/task_management/index.ttl#it"
-              >
-                <header class="flow-topic-header">
-                  <h1><pos-label></pos-label></h1>
-                  <blockquote class="flow-topic-summary">
-                    <pos-description></pos-description>
-                  </blockquote>
-                </header>
-                <pos-switch>
-                  <pos-case
-                    if-property="https://flowcoop.eu/topics/task_management/index.ttl#contribution"
+            <template>
+              <section class="flow-topic-section">
+                <h2>Why?</h2>
+                <pos-list
+                  rel="https://flowcoop.eu/topics/task_management/index.ttl#contribution"
+                >
+                  <template>
+                    <pos-app-document-viewer
+                      class="flow-topic-document"
+                    ></pos-app-document-viewer>
+                  </template>
+                </pos-list>
+              </section>
+            </template>
+          </pos-case>
+          <pos-case
+            if-property="https://flowcoop.eu/topics/task_management/index.ttl#flows"
+          >
+            <template>
+              <section class="flow-topic-section">
+                <h2>Flows</h2>
+                <ul class="flow-topic-list">
+                  <pos-list
+                    rel="https://flowcoop.eu/topics/task_management/index.ttl#flows"
                   >
                     <template>
-                      <section class="flow-topic-section">
-                        <h2>Why?</h2>
-                        <pos-list
-                          rel="https://flowcoop.eu/topics/task_management/index.ttl#contribution"
-                        >
-                          <template>
-                            <pos-app-document-viewer
-                              class="flow-topic-document"
-                            ></pos-app-document-viewer>
-                          </template>
-                        </pos-list>
-                      </section>
+                      <li>
+                        <strong><pos-label></pos-label></strong>:
+                        <pos-description></pos-description>
+                      </li>
                     </template>
-                  </pos-case>
-                  <pos-case
-                    if-property="https://flowcoop.eu/topics/task_management/index.ttl#flows"
+                  </pos-list>
+                </ul>
+              </section>
+            </template>
+          </pos-case>
+          <pos-case
+            if-property="https://flowcoop.eu/topics/task_management/index.ttl#tools"
+          >
+            <template>
+              <section class="flow-topic-section">
+                <h2>Tools</h2>
+                <ul class="flow-topic-list">
+                  <pos-list
+                    rel="https://flowcoop.eu/topics/task_management/index.ttl#tools"
                   >
                     <template>
-                      <section class="flow-topic-section">
-                        <h2>Flows</h2>
-                        <ul class="flow-topic-list">
-                          <pos-list
-                            rel="https://flowcoop.eu/topics/task_management/index.ttl#flows"
-                          >
-                            <template>
-                              <li>
-                                <strong><pos-label></pos-label></strong>:
-                                <pos-description></pos-description>
-                              </li>
-                            </template>
-                          </pos-list>
-                        </ul>
-                      </section>
+                      <li>
+                        <strong><pos-label></pos-label></strong>:
+                        <pos-description></pos-description>
+                        <pos-rich-link rel="https://schema.org/url">
+                          Open tool
+                        </pos-rich-link>
+                      </li>
                     </template>
-                  </pos-case>
-                  <pos-case
-                    if-property="https://flowcoop.eu/topics/task_management/index.ttl#tools"
-                  >
-                    <template>
-                      <section class="flow-topic-section">
-                        <h2>Tools</h2>
-                        <ul class="flow-topic-list">
-                          <pos-list
-                            rel="https://flowcoop.eu/topics/task_management/index.ttl#tools"
-                          >
-                            <template>
-                              <li>
-                                <strong><pos-label></pos-label></strong>:
-                                <pos-description></pos-description>
-                                <pos-rich-link rel="https://schema.org/url">
-                                  Open tool
-                                </pos-rich-link>
-                              </li>
-                            </template>
-                          </pos-list>
-                        </ul>
-                      </section>
-                    </template>
-                  </pos-case>
-                  <pos-case
-                    if-property="https://flowcoop.eu/templates/discussion/terms#outbox"
-                  >
-                    <template>
-                      <section class="flow-discussion">
-                        <pos-list
-                          rel="https://flowcoop.eu/templates/discussion/terms#actor"
-                          fetch
-                        >
-                          <template>
-                            <import-html
-                              src="/templates/discussion/header.html"
-                            ></import-html>
-                          </template>
-                        </pos-list>
-                        <pos-list
-                          rel="https://flowcoop.eu/templates/discussion/terms#outbox"
-                          fetch
-                        >
-                          <template>
-                            <import-html
-                              src="/templates/discussion/outbox.html"
-                            ></import-html>
-                          </template>
-                        </pos-list>
-                      </section>
-                    </template>
-                  </pos-case>
-                </pos-switch>
-              </pos-resource>
-              <pos-resource
-                uri="https://flowcoop.eu/topics/task_management/"
-              >
-                <import-html src="/templates/changes.html"></import-html>
-              </pos-resource>
-            </main>
-          </flow-version-context>
-        </pos-router>
-      </pos-app>
-    </ion-content>
+                  </pos-list>
+                </ul>
+              </section>
+            </template>
+          </pos-case>
+          <pos-case
+            if-property="https://flowcoop.eu/templates/discussion/terms#outbox"
+          >
+            <template>
+              <section class="flow-discussion">
+                <pos-list
+                  rel="https://flowcoop.eu/templates/discussion/terms#actor"
+                  fetch
+                >
+                  <template>
+                    <import-html
+                      src="/templates/discussion/header.html"
+                    ></import-html>
+                  </template>
+                </pos-list>
+                <pos-list
+                  rel="https://flowcoop.eu/templates/discussion/terms#outbox"
+                  fetch
+                >
+                  <template>
+                    <import-html
+                      src="/templates/discussion/outbox.html"
+                    ></import-html>
+                  </template>
+                </pos-list>
+              </section>
+            </template>
+          </pos-case>
+        </pos-switch>
+      </pos-resource>
+      <pos-resource
+        uri="https://flowcoop.eu/topics/task_management/"
+      >
+        <import-html src="/templates/changes.html"></import-html>
+      </pos-resource>
+    </flow-page> 
+  </body>  
 </html>

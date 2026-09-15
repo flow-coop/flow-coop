@@ -82,11 +82,11 @@ flow-if-open {
   display: contents;
 }
 
-.flow-topic-header {
+.flow-header {
   margin-block-end: 2.75rem;
 }
 
-.flow-topic-header h1 {
+.flow-header h1 {
   max-width: 14ch;
   margin: 0 0 1rem;
   color: var(--flow-text);
@@ -461,7 +461,7 @@ flow-collection-pages > [data-load-more] {
     padding: 1.5rem 1rem 3.5rem;
   }
 
-  .flow-topic-header h1 {
+  .flow-header h1 {
     font-size: 2.25rem;
   }
 
