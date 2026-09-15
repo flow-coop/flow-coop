@@ -10,3 +10,4 @@ import "/components/FlowSanitizedContent.js";
 import "/components/FlowFediverseInteraction.js";
 import "/components/UpdateLocation.js"
 import "/components/FlowHead.js"
+import "/components/FlowPage.js"
