@@ -20,9 +20,9 @@
       <pos-resource
         uri="https://flowcoop.eu/topics/task_management/index.ttl#it"
       >
-        <header class="flow-header">
+        <header>
           <h1><pos-label></pos-label></h1>
-          <blockquote class="flow-topic-summary">
+          <blockquote>
             <pos-description></pos-description>
           </blockquote>
         </header>
@@ -31,15 +31,13 @@
             if-property="https://flowcoop.eu/topics/task_management/index.ttl#contribution"
           >
             <template>
-              <section class="flow-topic-section">
+              <section>
                 <h2>Why?</h2>
                 <pos-list
                   rel="https://flowcoop.eu/topics/task_management/index.ttl#contribution"
                 >
                   <template>
-                    <pos-app-document-viewer
-                      class="flow-topic-document"
-                    ></pos-app-document-viewer>
+                    <pos-app-document-viewer></pos-app-document-viewer>
                   </template>
                 </pos-list>
               </section>
@@ -49,9 +47,9 @@
             if-property="https://flowcoop.eu/topics/task_management/index.ttl#flows"
           >
             <template>
-              <section class="flow-topic-section">
+              <section>
                 <h2>Flows</h2>
-                <ul class="flow-topic-list">
+                <ul>
                   <pos-list
                     rel="https://flowcoop.eu/topics/task_management/index.ttl#flows"
                   >
@@ -70,9 +68,9 @@
             if-property="https://flowcoop.eu/topics/task_management/index.ttl#tools"
           >
             <template>
-              <section class="flow-topic-section">
+              <section>
                 <h2>Tools</h2>
-                <ul class="flow-topic-list">
+                <ul>
                   <pos-list
                     rel="https://flowcoop.eu/topics/task_management/index.ttl#tools"
                   >

@@ -19,7 +19,6 @@ export class FlowPage extends HTMLElement {
 
     posRouter.setAttribute("mode", "pod");
     versionContext.setAttribute("uri", uri);
-    main.className = "flow-topic-shell";
 
     main.append(content);
     versionContext.append(main);
