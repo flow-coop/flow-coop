@@ -8,3 +8,6 @@ import "/components/FlowIfOpen.js";
 import "/components/FlowCollectionPages.js";
 import "/components/FlowSanitizedContent.js";
 import "/components/FlowFediverseInteraction.js";
+import "/components/UpdateLocation.js"
+import "/components/FlowHead.js"
+import "/components/FlowPage.js"
