@@ -1,4 +1,5 @@
 import { ReceiveResourceOS } from "./ReceiveResourceOS.js";
+import "/components/vendor/DOMPurify-3.4.14.min.js";
 
 const ALLOWED_TAGS = [
   "p", "br", "span", "a", "strong", "em", "code", "ul", "ol", "li", "blockquote",
