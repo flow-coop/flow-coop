@@ -1,25 +1,21 @@
 <pos-switch>
   <pos-case if-property="http://mementoweb.org/ns#memento">
     <template>
-      <ion-chip>
-        <pos-rich-link rel="http://mementoweb.org/ns#memento">
-          This version
-        </pos-rich-link>
-      </ion-chip>
+      <pos-rich-link rel="http://mementoweb.org/ns#memento">
+        This version
+      </pos-rich-link>
     </template>
   </pos-case>
   <pos-case else>
     <template>
-      <ion-badge color="warning">Draft</ion-badge>
+      <button color="warning">Draft</button>
     </template>
   </pos-case>
   <pos-case if-property="http://mementoweb.org/ns#original">
     <template>
-      <ion-chip>
         <pos-rich-link rel="http://mementoweb.org/ns#original">
           Latest published version
         </pos-rich-link>
-      </ion-chip>
     </template>
   </pos-case>
 </pos-switch>
