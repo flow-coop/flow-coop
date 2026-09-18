@@ -9,12 +9,28 @@ const flowPageTemplatePromise = fetch("/templates/pages/flow-page.html")
     return response.text();
   });
 
+function getPageUri() {
+  const url = new URL(window.location.href);
+
+  if (
+    url.hostname === "localhost" ||
+    url.hostname === "127.0.0.1"
+  ) {
+    return new URL(
+      url.pathname,
+      "https://flowcoop.eu"
+    ).href;
+  }
+
+  return url.href;
+}
+
 class FlowPage extends HTMLElement {
   async connectedCallback() {
     if (this.initialized) return;
     this.initialized = true;
 
-    const pageUri = window.location.href;
+    const pageUri = getPageUri();
     const thingUri = new URL("index.ttl#it", pageUri).href;
 
     /*
