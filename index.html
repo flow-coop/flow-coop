@@ -2,23 +2,22 @@
 <html>
   <head>
     <title>Flow coop</title>
-    <meta name="color-scheme" content="dark light" />
-    <script
-      type="module"
-      src="https://cdn.jsdelivr.net/npm/@pod-os/elements/dist/elements/elements.esm.js"
-    ></script>
-    <link
-      href="https://cdn.jsdelivr.net/npm/@pod-os/elements/dist/elements/elements.css"
-      rel="stylesheet"
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' https:; img-src 'self' data: https:; font-src 'self' data: https:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/@pod-os/elements@0.43.0/dist/elements/elements.css"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/styles/flow.css" />
-    <script type="module" src="/components/ImportHtml.js" defer></script>
-    <script type="module" src="/components/UpdateLocation.js"></script>
+    <script type="module" src="/components/load.js"></script>
   </head>
   <body>
-    <pos-app>
-      <pos-router mode="pod">
+    <flow-page>
         <h1>Flow coop</h1>
         <p>
           This is the WIP home of the Flow coop, a cooperative building
@@ -66,10 +65,5 @@
             </pos-list>
           </pos-resource>
         </ul>
-        <pos-resource uri="https://flowcoop.eu/index.ttl#it">
-          <import-html src="/templates/discussion/header.html"></import-html>
-          <import-html src="/templates/discussion/outbox.html"></import-html>
-        </pos-resource>
-      </pos-router> 
-    </pos-app>
+      </flow-page>
 </html>

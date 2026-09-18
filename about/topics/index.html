@@ -2,43 +2,22 @@
 <html>
   <head>
     <title>Topics - About Flow</title>
-    <script
-      src="https://cdn.jsdelivr.net/npm/eruda"
-      onload="eruda.init()"
-    ></script>
-    <meta name="color-scheme" content="dark light" />
-    <script
-      type="module"
-      src="https://cdn.jsdelivr.net/npm/@pod-os/elements/dist/elements/elements.esm.js"
-    ></script>
-    <link
-      href="https://cdn.jsdelivr.net/npm/@pod-os/elements/dist/elements/elements.css"
-      rel="stylesheet"
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' https:; img-src 'self' data: https:; font-src 'self' data: https:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/@pod-os/elements@0.43.0/dist/elements/elements.css"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/styles/flow.css" />
-    <script
-      type="module"
-      src="/components/ImportHtml.js?version=20260905-3"
-    ></script>
-    <script type="module" src="/components/FlowVersionContext.js"></script>
-    <script type="module" src="/components/FlowIfOpen.js"></script>
-    <script type="module" src="/components/FlowCollectionPages.js"></script>
-    <script type="module" src="/components/FlowSanitizedContent.js"></script>
-    <script
-      type="module"
-      src="/components/FlowFediverseInteraction.js"
-    ></script>
-    <script type="module" src="/components/UpdateLocation.js"></script>
+    <script type="module" src="/components/load.js"></script> 
   </head>
   <body>
-    <pos-app>
-      <pos-router mode="pod">
-        <pos-resource uri="https://flowcoop.eu/about/topics/">
-          <import-html
-            src="https://flowcoop.eu/templates/versions/status.html"
-          ></import-html>
-        </pos-resource>
+    <flow-page>
         <h1>About Flow: Topics</h1>
         <p>
           Topic pages provide a flexible infrastructure to describe data flows
@@ -87,13 +66,7 @@
               </template>
             </pos-list>
           </ul>
-          <import-html src="/templates/discussion/header.html"></import-html>
-          <import-html src="/templates/discussion/outbox.html"></import-html>
         </pos-resource>
-        <pos-resource uri="https://flowcoop.eu/about/topics/">
-          <import-html src="/templates/changes.html"></import-html>
-        </pos-resource>
-      </pos-router> 
-    </pos-app>
+      </flow-page>
   </body>
 </html>

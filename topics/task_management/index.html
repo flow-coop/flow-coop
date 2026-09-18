@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <title>Task Management</title>
     <meta charset="UTF-8" />
     <meta
       http-equiv="Content-Security-Policy"
@@ -8,7 +9,6 @@
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark light" />
-    <title>Task Management</title>
     <link
       href="https://cdn.jsdelivr.net/npm/@pod-os/elements@0.43.0/dist/elements/elements.css"
       rel="stylesheet"
@@ -17,18 +17,8 @@
     <script type="module" src="/components/load.js"></script>
   </head>
   <body>
-    <pos-app>
-      <pos-router mode="pod">
-        <flow-version-context
-          uri="https://flowcoop.eu/topics/task_management/"
-        >
-          <main>
-            <pos-resource
-              uri="https://flowcoop.eu/topics/task_management/"
-            >
-              <import-html src="/templates/versions/status.html"></import-html>
-            </pos-resource>
-            <pos-resource
+    <flow-page>
+      <pos-resource
               uri="https://flowcoop.eu/topics/task_management/index.ttl#it"
             >
               <header>
@@ -100,43 +90,5 @@
                     </section>
                   </template>
                 </pos-case>
-                <pos-case
-                  if-property="https://flowcoop.eu/templates/discussion/terms#outbox"
-                >
-                  <template>
-                    <section>
-                      <pos-list
-                        rel="https://flowcoop.eu/templates/discussion/terms#actor"
-                        fetch
-                      >
-                        <template>
-                          <import-html
-                            src="/templates/discussion/header.html"
-                          ></import-html>
-                        </template>
-                      </pos-list>
-                      <pos-list
-                        rel="https://flowcoop.eu/templates/discussion/terms#outbox"
-                        fetch
-                      >
-                        <template>
-                          <import-html
-                            src="/templates/discussion/outbox.html"
-                          ></import-html>
-                        </template>
-                      </pos-list>
-                    </section>
-                  </template>
-                </pos-case>
-              </pos-switch>
-            </pos-resource>
-            <pos-resource
-              uri="https://flowcoop.eu/topics/task_management/"
-            >
-              <import-html src="/templates/changes.html"></import-html>
-            </pos-resource>
-          </main>
-        </flow-version-context>
-      </pos-router>
-    </pos-app>
+    </flow-page>
 </html>
