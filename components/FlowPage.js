@@ -85,12 +85,11 @@ class FlowPage extends HTMLElement {
 
     pageThing.setAttribute("uri", thingUri);
 
-    const content =
-      template.content.querySelector("flow-content");
+    const content = template.content.querySelector("[data-flow-content]");
 
     if (!content) {
       throw new Error(
-        "Flow page template must contain <flow-content>"
+        "Flow page template must contain <div data-flow-content></div>"
       );
     }
 
