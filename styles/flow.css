@@ -1,3 +1,5 @@
+@import url("https://cdn.jsdelivr.net/npm/@pod-os/elements@0.43.0/dist/elements/elements.css");
+
 :root {
   color-scheme: light dark;
   --flow-page: #f4f6f5;
