@@ -89,6 +89,22 @@ export async function resolveVersionContext(os, versionUri) {
   };
 }
 
+function getBaseUri(pageBaseURI) {
+  const url = new URL(pageBaseURI);
+
+  if (
+    url.hostname === "localhost" ||
+    url.hostname === "127.0.0.1"
+  ) {
+    return new URL(
+      `${url.pathname}${url.search}${url.hash}`,
+      "https://flowcoop.eu"
+    ).href;
+  }
+
+  return url.href;
+}
+
 export class FlowVersionContext extends ReceiveResourceOS {
   constructor() {
     super();
@@ -122,7 +138,8 @@ export class FlowVersionContext extends ReceiveResourceOS {
   }
 
   update() {
-    const versionUri = this.getAttribute("uri") || this.resource?.uri;
+    const value = this.getAttribute("uri") || this.resource?.uri;
+    const versionUri = new URL(value, getBaseUri(this.baseURI)).href
     if (!this.os || !versionUri) return false;
 
     const generation = ++this._generation;

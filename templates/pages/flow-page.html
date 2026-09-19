@@ -1,15 +1,15 @@
 <pos-app>
   <pos-router mode="pod">
-    <flow-version-context>
+    <flow-version-context uri=".">
       <main>
 
-        <pos-resource data-page-resource>
+        <relative-pos-resource uri=".">
           <import-html
             src="/templates/versions/status.html"
           ></import-html>
-        </pos-resource>
+        </relative-pos-resource>
 
-        <pos-resource data-page-thing>
+        <relative-pos-resource uri="index.ttl#it">
 
           <div data-flow-content></div>
 
@@ -45,13 +45,13 @@
             </pos-case>
           </pos-switch>
 
-        </pos-resource>
+        </relative-pos-resource>
 
-        <pos-resource data-page-resource>
+        <relative-pos-resource uri=".">
           <import-html
             src="/templates/changes.html"
           ></import-html>
-        </pos-resource>
+        </relative-pos-resource>
 
       </main>
     </flow-version-context>
