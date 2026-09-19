@@ -1,4 +1,5 @@
 import "/components/FlowPage.js";
+import "/components/RelativePOSResource.js"
 import "https://cdn.jsdelivr.net/npm/@pod-os/elements/dist/elements/elements.esm.js";
 import "/components/ImportHtml.js";
 import "/components/UpdateLocation.js";
