@@ -3,6 +3,9 @@
 <#it> <https://schema.org/name> "Topics";
     <https://flowcoop.eu/templates/discussion/terms#actor> <https://flow-coop.netlify.app/flow_topics>;
     <https://flowcoop.eu/templates/discussion/terms#outbox> <https://flow-coop.netlify.app/flow_topics/outbox/>;
-    <https://flowcoop.eu/about/topics/index.ttl#proposed> <#agency>
+    <https://flowcoop.eu/about/topics/index.ttl#proposed> <#agency>,<#communication>
     .
 <#agency> schema:name "Agency".
+
+<#communication> schema:name "Communication";
+schema:description "We are social creatures. Fundamentally so much of what we have to do as humans is communication, sharing of information, for fun or for work. It’s one of the main ways that data flows, both inbound and outbound.".
