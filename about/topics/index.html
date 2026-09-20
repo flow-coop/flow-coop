@@ -10,57 +10,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark light" />
     <link rel="stylesheet" href="/styles/flow.css" />
-    <script type="module" src="/components/load.js"></script> 
+    <script type="module" src="/components/load.js"></script>
   </head>
   <body>
     <flow-page>
-        <h1>About Flow: Topics</h1>
-        <p>
-          Topic pages provide a flexible infrastructure to describe data flows
-          of value to co-op members and how they are connected.
-        </p>
-        <p>
-          Topics can be subscribed to, and you can join the discussion using
-          an ActivityPub client, e.g. Mastodon.
-        </p>
-        <p>
-          A good topic page describes a broad enough concept that benefits
-          from discussion and elaboration over time. It should be associated
-          with more than one possible data flow and relationships with other
-          topics should be explored before creating it.
-        </p>
-        <p>
-          New topics can be proposed. They are created if they are aligned
-          with the co-op's mission and a commitment is made by two coop
-          members to active moderation and curation. Pages with fewer than two
-          active curators are marked as under consideration for mothballing.
-          On a regular basis, pages are reviewed and marked as inactive with
-          content marked as read-only and interactions limited.
-        </p>
-        <h2>Existing topics</h2>
-        <ul>
-          <pos-resource uri="https://flowcoop.eu/topics/">
-            <pos-list rel="http://www.w3.org/ns/ldp#contains">
-              <template>
-                <li>
-                  <pos-rich-link><pos-label></pos-label></pos-rich-link>
-                </li>
-              </template>
-            </pos-list>
-          </pos-resource>
-        </ul>
-        <h2>Proposed topics</h2>
-        <ul>
-          <pos-list
-            rel="https://flowcoop.eu/about/topics/index.ttl#proposed"
-          >
+      <h1>About Flow: Topics</h1>
+      <p>
+        Topic pages provide a flexible infrastructure to describe data flows of
+        value to co-op members and how they are connected.
+      </p>
+      <p>
+        Topics can be subscribed to, and you can join the discussion using an
+        ActivityPub client, e.g. Mastodon.
+      </p>
+      <p>
+        A good topic page describes a broad enough concept that benefits from
+        discussion and elaboration over time. It should be associated with more
+        than one possible data flow and relationships with other topics should
+        be explored before creating it.
+      </p>
+      <h2>Creating a new topic page</h2>
+      <p>
+        New topics can be proposed. Post a message via the Fediverse to
+        @flow_topics@flowcoop.eu. The topic will be added as a "proposed topic"
+        with an optional initial short description.
+      </p>
+      <p>
+        Topic pages are created if they are aligned with the co-op's mission and
+        a commitment is made by two coop members to active moderation and
+        curation.
+      </p>
+      <p>
+        The coop members will draft a first version of the page. Once it is
+        sufficiently complete, it will be given a discussion page on the
+        Fediverse for anybody to comment. The coop members will moderate
+        comments and make edits to the page.
+      </p>
+      <p>
+        Pages with fewer than two active curators are marked as under
+        consideration for mothballing. On a regular basis, pages are reviewed
+        and marked as inactive with content marked as read-only and interactions
+        limited.
+      </p>
+      <h2>Existing topics</h2>
+      <ul>
+        <pos-resource uri="https://flowcoop.eu/topics/">
+          <pos-list rel="http://www.w3.org/ns/ldp#contains">
             <template>
               <li>
                 <pos-rich-link><pos-label></pos-label></pos-rich-link>
               </li>
             </template>
           </pos-list>
-        </ul>
-      </flow-page>
+        </pos-resource>
+      </ul>
+      <h2>Proposed topics</h2>
+      <ul>
+        <pos-list rel="https://flowcoop.eu/about/topics/index.ttl#proposed">
+          <template>
+            <li>
+              <strong>
+                <pos-label></pos-label>
+              </strong>
+              <pos-description></pos-description>
+            </li>
+          </template>
+        </pos-list>
+      </ul>
+    </flow-page>
   </body>
 </html>
