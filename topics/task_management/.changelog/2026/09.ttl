@@ -1,0 +1,4 @@
+@prefix solid: <http://www.w3.org/ns/solid/terms#>.
+@prefix ex: <http://www.example.org/terms#>.
+
+<https://flowcoop.eu/topics/task_management/history/changelog/2026/09#6789946> <http://www.w3.org/ns/prov#used> <https://mastodon.social/@jg10/117116262041398775>, <https://mastodon.social/@jg10/117116293386353207>, <https://mastodon.social/@jg10/117116304491150823>, <https://mastodon.social/@jg10/117133369969380514>, <https://mastodon.social/@jg10/117133374863355352>, <https://mastodon.social/@jg10/117133378229611560>, <https://mastodon.social/@jg10/117133392772393654>, <https://mastodon.social/@jg10/117133425566377347>.
