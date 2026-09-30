@@ -1,8 +1,51 @@
 import { ReceiveResourceOS } from "./ReceiveResourceOS.js";
+import { currentMonthChangelogUrl } from "./currentMonthChangelogUrl.js";
 
 const PROV_USED = "http://www.w3.org/ns/prov#used";
 const PROV_WAS_GENERATED_BY = "http://www.w3.org/ns/prov#wasGeneratedBy";
 const MAX_VERSION_RESOURCES = 50;
+
+function isDraftVersionUri(uri) {
+  return /\/history\/draft\/?$/.test(new URL(uri).pathname);
+}
+
+export function extractCommentUrisFromChangelogMonth(turtle, pageOrigin) {
+  const used = new Set();
+  const chunks = turtle.split(/\n<#/);
+  for (const chunk of chunks) {
+    const usedMatch = chunk.match(/prov:used\s+(.+?)(?:;|\.\s*$)/m);
+    if (!usedMatch) continue;
+    const uris = usedMatch[1].match(/<[^>]+>/g) || [];
+    for (const wrapped of uris) {
+      const clean = wrapped.slice(1, -1);
+      try {
+        if (new URL(clean).origin !== pageOrigin) {
+          used.add(clean);
+        }
+      } catch {
+        // relative URI or malformed — skip
+      }
+    }
+  }
+  return used;
+}
+
+async function fetchDraftChangelogUsedUris(versionUri) {
+  const monthUrl = currentMonthChangelogUrl(versionUri);
+  try {
+    const response = await fetch(monthUrl, {
+      headers: { Accept: "text/turtle" },
+    });
+    if (!response.ok) return new Set();
+    const turtle = await response.text();
+    return extractCommentUrisFromChangelogMonth(
+      turtle,
+      new URL(versionUri).origin,
+    );
+  } catch {
+    return new Set();
+  }
+}
 
 function relationUris(store, subjectUri, predicate) {
   return store
@@ -89,6 +132,14 @@ export async function resolveVersionContext(os, versionUri) {
   };
 }
 
+export async function resolveVersionContextWithDraft(os, versionUri) {
+  const context = await resolveVersionContext(os, versionUri);
+  if (!isDraftVersionUri(versionUri)) return context;
+  const draftUsed = await fetchDraftChangelogUsedUris(versionUri);
+  for (const uri of draftUsed) context.usedUris.add(uri);
+  return context;
+}
+
 function getBaseUri(pageBaseURI) {
   const url = new URL(pageBaseURI);
 
@@ -147,7 +198,7 @@ export class FlowVersionContext extends ReceiveResourceOS {
     this.removeAttribute("error");
     this.setAttribute("loading", "");
 
-    this._contextPromise = resolveVersionContext(this.os, versionUri)
+    this._contextPromise = resolveVersionContextWithDraft(this.os, versionUri)
       .then((context) => {
         if (generation !== this._generation) return context;
         this.removeAttribute("loading");
