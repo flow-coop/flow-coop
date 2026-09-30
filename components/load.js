@@ -5,6 +5,7 @@ import "/components/ImportHtml.js";
 import "/components/UpdateLocation.js";
 import "/components/FlowVersionContext.js";
 import "/components/FlowIfOpen.js";
+import "/components/FlowCloseToggle.js";
 import "/components/FlowCollectionPages.js";
 import "/components/FlowSanitizedContent.js";
 import "/components/FlowFediverseInteraction.js";
