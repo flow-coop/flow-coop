@@ -1,11 +1,16 @@
 // @vitest-environment happy-dom
 // @ts-nocheck
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   extractCommentUrisFromChangelogMonth,
   resolveVersionContextWithDraft,
 } from "./FlowVersionContext.js";
 import { createMockOs } from "./_test-harness.js";
+import { currentMonthChangelogUrl } from "./currentMonthChangelogUrl.js";
+
+const FIXED_DATE = new Date(Date.UTC(2026, 8, 15, 12, 0, 0));
+const DRAFT_URI = "https://flowcoop.eu/topics/task_management/history/draft/";
+const MONTH_URL = currentMonthChangelogUrl(DRAFT_URI, FIXED_DATE);
 
 const sampleTurtle = `@prefix as: <https://www.w3.org/ns/activitystreams#>.
 @prefix prov: <http://www.w3.org/ns/prov#>.
@@ -84,12 +89,17 @@ describe("extractCommentUrisFromChangelogMonth", () => {
 });
 
 describe("resolveVersionContextWithDraft", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(FIXED_DATE);
+  });
+
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
   it("merges comment URIs from the synthesized changelog month for a draft URI", async () => {
-    const versionUri = "https://flowcoop.eu/topics/task_management/history/draft/";
     const monthTurtle = `<#abc> a prov:Activity;
     prov:used <https://mastodon.social/users/jg10/statuses/1>, <https://mastodon.social/users/jg10/statuses/2>.
 .`;
@@ -102,10 +112,10 @@ describe("resolveVersionContextWithDraft", () => {
     vi.stubGlobal("fetch", mockFetch);
 
     const os = createMockOs();
-    const context = await resolveVersionContextWithDraft(os, versionUri);
+    const context = await resolveVersionContextWithDraft(os, DRAFT_URI);
 
     expect(mockFetch).toHaveBeenCalledWith(
-      "https://flowcoop.eu/topics/task_management/history/changelog/2026/09",
+      MONTH_URL,
       expect.objectContaining({ headers: expect.any(Object) }),
     );
     expect(context.usedUris.has("https://mastodon.social/users/jg10/statuses/1")).toBe(true);

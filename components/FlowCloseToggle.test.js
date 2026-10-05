@@ -1,13 +1,14 @@
 // @vitest-environment happy-dom
 // @ts-nocheck
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createMockOs, mockThing } from "./_test-harness.js";
+import { currentMonthChangelogUrl } from "./currentMonthChangelogUrl.js";
 import "./FlowCloseToggle.js";
 
+const FIXED_DATE = new Date(Date.UTC(2026, 8, 15, 12, 0, 0));
 const DRAFT_URL =
   "https://flowcoop.eu/topics/task_management/history/draft/";
-const PATCH_URL =
-  "https://flowcoop.eu/topics/task_management/history/changelog/2026/09";
+const PATCH_URL = currentMonthChangelogUrl(DRAFT_URL, FIXED_DATE);
 const NOTE_URI = "https://mastodon.social/users/jg10/statuses/1";
 
 async function flush() {
@@ -39,6 +40,12 @@ function mountCloseToggle({ noteUri = NOTE_URI, fetchResponse } = {}) {
 describe("FlowCloseToggle", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(FIXED_DATE);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("renders a button labelled 'Close for this draft'", () => {
