@@ -8,6 +8,7 @@ const URL_ATTRIBUTES = new Set([
 const TRUSTED_CUSTOM_ELEMENTS = new Set([
   "boost-component",
   "flow-collection-pages",
+  "flow-close-toggle",
   "flow-fediverse-interaction",
   "flow-if-open",
   "flow-sanitized-content",
