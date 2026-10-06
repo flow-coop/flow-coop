@@ -30,10 +30,10 @@ export function extractCommentUrisFromChangelogMonth(turtle, pageOrigin) {
   return used;
 }
 
-async function fetchDraftChangelogUsedUris(versionUri) {
+async function fetchDraftChangelogUsedUris(os, versionUri) {
   const monthUrl = currentMonthChangelogUrl(versionUri);
   try {
-    const response = await fetch(monthUrl, {
+    const response = await os.session.authenticatedFetch(monthUrl, {
       headers: { Accept: "text/turtle" },
     });
     if (!response.ok) return new Set();
@@ -135,7 +135,7 @@ export async function resolveVersionContext(os, versionUri) {
 export async function resolveVersionContextWithDraft(os, versionUri) {
   const context = await resolveVersionContext(os, versionUri);
   if (!isDraftVersionUri(versionUri)) return context;
-  const draftUsed = await fetchDraftChangelogUsedUris(versionUri);
+  const draftUsed = await fetchDraftChangelogUsedUris(os, versionUri);
   for (const uri of draftUsed) context.usedUris.add(uri);
   return context;
 }

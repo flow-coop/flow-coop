@@ -1,4 +1,5 @@
 import { vi } from "vitest";
+import { BehaviorSubject } from "rxjs";
 
 export function createMockOs(overrides = {}) {
   return {
@@ -6,6 +7,9 @@ export function createMockOs(overrides = {}) {
       authenticatedFetch: vi.fn().mockResolvedValue({ status: 200, ok: true }),
       session: { webId: undefined },
     },
+    observeSession: vi.fn(
+      () => new BehaviorSubject({ isLoggedIn: false, webId: undefined }),
+    ),
     store: {
       fetch: vi.fn().mockResolvedValue(undefined),
       get: vi.fn().mockImplementation((uri) => mockThing(uri)),

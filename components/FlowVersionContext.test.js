@@ -99,64 +99,54 @@ describe("resolveVersionContextWithDraft", () => {
     vi.restoreAllMocks();
   });
 
-  it("merges comment URIs from the synthesized changelog month for a draft URI", async () => {
+  it("fetches the changelog through the authenticated session for a draft URI", async () => {
     const monthTurtle = `<#abc> a prov:Activity;
     prov:used <https://mastodon.social/users/jg10/statuses/1>, <https://mastodon.social/users/jg10/statuses/2>.
 .`;
 
-    const mockFetch = vi.fn().mockResolvedValue({
+    const os = createMockOs();
+    os.session.authenticatedFetch.mockResolvedValue({
       ok: true,
       status: 200,
       text: () => Promise.resolve(monthTurtle),
     });
-    vi.stubGlobal("fetch", mockFetch);
 
-    const os = createMockOs();
     const context = await resolveVersionContextWithDraft(os, DRAFT_URI);
 
-    expect(mockFetch).toHaveBeenCalledWith(
+    expect(os.session.authenticatedFetch).toHaveBeenCalledWith(
       MONTH_URL,
       expect.objectContaining({ headers: expect.any(Object) }),
     );
     expect(context.usedUris.has("https://mastodon.social/users/jg10/statuses/1")).toBe(true);
     expect(context.usedUris.has("https://mastodon.social/users/jg10/statuses/2")).toBe(true);
-    vi.unstubAllGlobals();
   });
 
   it("does not fetch the changelog for a non-draft URI", async () => {
-    const mockFetch = vi.fn();
-    vi.stubGlobal("fetch", mockFetch);
-
     const os = createMockOs();
     const versionUri = "https://flowcoop.eu/topics/task_management/history/6789946/";
     const context = await resolveVersionContextWithDraft(os, versionUri);
 
-    expect(mockFetch).not.toHaveBeenCalled();
+    expect(os.session.authenticatedFetch).not.toHaveBeenCalled();
     expect(context.usedUris.size).toBe(0);
-    vi.unstubAllGlobals();
   });
 
   it("returns the existing context unchanged when the changelog fetch fails", async () => {
     const versionUri = "https://flowcoop.eu/topics/task_management/history/draft/";
-    const mockFetch = vi.fn().mockResolvedValue({ ok: false, status: 404 });
-    vi.stubGlobal("fetch", mockFetch);
-
     const os = createMockOs();
+    os.session.authenticatedFetch.mockResolvedValue({ ok: false, status: 404 });
+
     const context = await resolveVersionContextWithDraft(os, versionUri);
 
     expect(context.usedUris.size).toBe(0);
-    vi.unstubAllGlobals();
   });
 
   it("returns the existing context unchanged when fetch throws", async () => {
     const versionUri = "https://flowcoop.eu/topics/task_management/history/draft/";
-    const mockFetch = vi.fn().mockRejectedValue(new Error("network"));
-    vi.stubGlobal("fetch", mockFetch);
-
     const os = createMockOs();
+    os.session.authenticatedFetch.mockRejectedValue(new Error("network"));
+
     const context = await resolveVersionContextWithDraft(os, versionUri);
 
     expect(context.usedUris.size).toBe(0);
-    vi.unstubAllGlobals();
   });
 });

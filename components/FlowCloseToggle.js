@@ -1,5 +1,6 @@
 import { ReceiveResourceOS } from "./ReceiveResourceOS.js";
 import { currentMonthChangelogUrl } from "./currentMonthChangelogUrl.js";
+import { loadChangelog, invalidateChangelog } from "./loadChangelog.js";
 
 const PROV_USED = "http://www.w3.org/ns/prov#used";
 const SOLID = "http://www.w3.org/ns/solid/terms#";
@@ -8,19 +9,19 @@ const SHARD_SUBJECT = "<#current>";
 export class FlowCloseToggle extends ReceiveResourceOS {
   constructor() {
     super();
-    this._patchSub = null;
+    this._sessionSub = null;
   }
 
   connectedCallback() {
     super.connectedCallback();
-    this._subscribePatchTarget();
-    this._render();
+    this._subscribeSession();
+    this._refreshWritability();
   }
 
   disconnectedCallback() {
     clearTimeout(this._osTimer);
-    this._patchSub?.unsubscribe();
-    this._patchSub = null;
+    this._sessionSub?.unsubscribe();
+    this._sessionSub = null;
   }
 
   set resource(value) {
@@ -42,14 +43,8 @@ export class FlowCloseToggle extends ReceiveResourceOS {
 
   _setOs(os) {
     this._os = os;
-    if (this._resource) {
-      this._render();
-      return;
-    }
-    this._render();
-    Promise.resolve(this.receiveResource(this._resource)).then((hasResource) => {
-      if (hasResource) this._render();
-    });
+    this._subscribeSession();
+    this._refreshWritability();
   }
 
   receiveResource = async (resource) => {
@@ -73,22 +68,23 @@ export class FlowCloseToggle extends ReceiveResourceOS {
     return Boolean(this._os.store.get(this._patchUrl()).editable);
   }
 
-  _subscribePatchTarget() {
-    if (!this._os || this._patchSub) return;
-    const url = this._patchUrl();
-    const target = this._os.store.get(url);
-    this._patchSub = target
-      .observeChanges({
-        filterFn: (quad) =>
-          quad.subject.value === url || quad.object.value === url,
-        observes: () => this._os.store.get(url).editable,
-        compare: (a, b) => a === b,
-      })
-      .subscribe(() => this._render());
+  _subscribeSession() {
+    if (this._sessionSub) return;
+    if (typeof this._os?.observeSession !== "function") return;
+    this._sessionSub = this._os.observeSession().subscribe(() => {
+      invalidateChangelog(this._os, this._patchUrl());
+      this._refreshWritability();
+    });
+  }
+
+  _refreshWritability() {
+    const load = this._os
+      ? loadChangelog(this._os, this._patchUrl())
+      : Promise.resolve(false);
+    Promise.resolve(load).then(() => this._render());
   }
 
   _render() {
-    this._subscribePatchTarget();
     if (!this._isWritable()) {
       this.replaceChildren();
       return;
