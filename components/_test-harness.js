@@ -14,11 +14,13 @@ export function createMockOs(overrides = {}) {
   };
 }
 
-export function mockThing(uri, types = [], properties = {}) {
+export function mockThing(uri, types = [], properties = {}, opts = {}) {
   return {
     uri,
     types: () => types.map((u) => ({ uri: u })),
     relations: () => [],
     anyValue: (predicate) => properties[predicate] ?? null,
+    editable: opts.editable ?? false,
+    observeChanges: opts.observeChanges,
   };
 }

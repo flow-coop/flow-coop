@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 // @ts-nocheck
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { Subject } from "rxjs";
 import { createMockOs, mockThing } from "./_test-harness.js";
 import { currentMonthChangelogUrl } from "./currentMonthChangelogUrl.js";
 import "./FlowCloseToggle.js";
@@ -12,10 +13,15 @@ const PATCH_URL = currentMonthChangelogUrl(DRAFT_URL, FIXED_DATE);
 const NOTE_URI = "https://mastodon.social/users/jg10/statuses/1";
 
 async function flush() {
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  await vi.advanceTimersByTimeAsync(0);
 }
 
-function mountCloseToggle({ noteUri = NOTE_URI, fetchResponse } = {}) {
+function makePatchSubject() {
+  const subject = new Subject();
+  return { subject, observable: subject };
+}
+
+function mountCloseToggle({ noteUri = NOTE_URI, fetchResponse, patchTarget } = {}) {
   const host = document.createElement("div");
   host.innerHTML = `<flow-close-toggle></flow-close-toggle>`;
   document.body.appendChild(host);
@@ -29,18 +35,30 @@ function mountCloseToggle({ noteUri = NOTE_URI, fetchResponse } = {}) {
   if (fetchResponse) {
     os.session.authenticatedFetch.mockResolvedValue(fetchResponse);
   }
-  os.store.get.mockImplementation((uri) => mockThing(uri));
-  element.os = os;
 
+  const defaultPatchTarget = {
+    editable: true,
+    observeChanges: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }),
+  };
+  const target = patchTarget ?? defaultPatchTarget;
+
+  os.store.get.mockImplementation((uri) => {
+    if (uri === PATCH_URL) {
+      return { ...target, uri };
+    }
+    return mockThing(uri);
+  });
+
+  element.os = os;
   element.receiveResource(mockThing(noteUri));
 
-  return { element, host, os };
+  return { element, host, os, target };
 }
 
 describe("FlowCloseToggle", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
-    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.useFakeTimers();
     vi.setSystemTime(FIXED_DATE);
   });
 
@@ -48,11 +66,17 @@ describe("FlowCloseToggle", () => {
     vi.useRealTimers();
   });
 
-  it("renders a button labelled 'Close for this draft'", () => {
+  it("renders a button labelled 'Close comment'", () => {
     const { element } = mountCloseToggle();
     const button = element.querySelector("button");
     expect(button).not.toBeNull();
-    expect(button.textContent.trim()).toBe("Close for this draft");
+    expect(button.textContent.trim()).toBe("Close comment");
+  });
+
+  it("renders the button with class 'flow-link-button'", () => {
+    const { element } = mountCloseToggle();
+    const button = element.querySelector("button");
+    expect(button.classList.contains("flow-link-button")).toBe(true);
   });
 
   it("PATCHes solid:inserts { <#current> prov:used <uri> } on click", async () => {
@@ -127,12 +151,12 @@ describe("FlowCloseToggle", () => {
     expect(dispatched).not.toHaveBeenCalled();
   });
 
-  it("switches the button label to 'Reopen for this draft' when closed", async () => {
+  it("switches the button label to 'Reopen comment' when closed", async () => {
     const { element } = mountCloseToggle();
     element.querySelector("button").click();
     await flush();
     expect(element.querySelector("button").textContent.trim()).toBe(
-      "Reopen for this draft",
+      "Reopen comment",
     );
   });
 
@@ -162,11 +186,104 @@ describe("FlowCloseToggle", () => {
       configurable: true,
     });
     const os = createMockOs();
+    os.store.get.mockImplementation((uri) =>
+      uri === PATCH_URL
+        ? { uri, editable: true, observeChanges: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }) }
+        : mockThing(uri),
+    );
     element.os = os;
 
     expect(element.hasAttribute("error")).toBe(true);
     const button = element.querySelector("button");
     button.click();
     expect(os.session.authenticatedFetch).not.toHaveBeenCalled();
+  });
+});
+
+describe.each([
+  { editable: false, label: "false" },
+  { editable: undefined, label: "undefined (unfetched)" },
+])("FlowCloseToggle writability gate — target.editable is $label", ({ editable }) => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+    vi.useFakeTimers();
+    vi.setSystemTime(FIXED_DATE);
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("hides the button (renders no button)", () => {
+    const { element } = mountCloseToggle({
+      patchTarget: {
+        editable,
+        observeChanges: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }),
+      },
+    });
+    expect(element.querySelector("button")).toBeNull();
+  });
+});
+
+describe("FlowCloseToggle — reactive re-render on patch target data", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+    vi.useFakeTimers();
+    vi.setSystemTime(FIXED_DATE);
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("renders the button after editable flips from false to true", () => {
+    const { subject, observable } = makePatchSubject();
+    const patchTarget = {
+      editable: false,
+      observeChanges: () => observable,
+    };
+    const { element, target } = mountCloseToggle({ patchTarget });
+
+    expect(element.querySelector("button")).toBeNull();
+
+    target.editable = true;
+    subject.next({});
+
+    expect(element.querySelector("button")).not.toBeNull();
+    expect(element.querySelector("button").textContent.trim()).toBe(
+      "Close comment",
+    );
+  });
+
+  it("hides the button after editable flips from true to false", () => {
+    const { subject, observable } = makePatchSubject();
+    const patchTarget = {
+      editable: true,
+      observeChanges: () => observable,
+    };
+    const { element, target } = mountCloseToggle({ patchTarget });
+
+    expect(element.querySelector("button")).not.toBeNull();
+
+    target.editable = false;
+    subject.next({});
+
+    expect(element.querySelector("button")).toBeNull();
+  });
+
+  it("unsubscribes on disconnect (no further re-renders)", () => {
+    const unsubscribe = vi.fn();
+    const { observable } = makePatchSubject();
+    const subscribeReturning = {
+      subscribe: vi.fn(() => ({ unsubscribe })),
+    };
+    const patchTarget = {
+      editable: false,
+      observeChanges: () => subscribeReturning,
+    };
+    const { element } = mountCloseToggle({ patchTarget });
+
+    element.remove();
+    document.body.innerHTML = "";
+
+    expect(unsubscribe).toHaveBeenCalled();
   });
 });

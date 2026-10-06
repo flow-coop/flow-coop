@@ -6,13 +6,21 @@ const SOLID = "http://www.w3.org/ns/solid/terms#";
 const SHARD_SUBJECT = "<#current>";
 
 export class FlowCloseToggle extends ReceiveResourceOS {
+  constructor() {
+    super();
+    this._patchSub = null;
+  }
+
   connectedCallback() {
     super.connectedCallback();
+    this._subscribePatchTarget();
     this._render();
   }
 
   disconnectedCallback() {
     clearTimeout(this._osTimer);
+    this._patchSub?.unsubscribe();
+    this._patchSub = null;
   }
 
   set resource(value) {
@@ -32,12 +40,17 @@ export class FlowCloseToggle extends ReceiveResourceOS {
     return this._os;
   }
 
-  _setOs = async (os) => {
+  _setOs(os) {
     this._os = os;
-    if (this._resource) return;
-    let hasResource = await this.receiveResource(this._resource);
-    if (!hasResource) this._render();
-  };
+    if (this._resource) {
+      this._render();
+      return;
+    }
+    this._render();
+    Promise.resolve(this.receiveResource(this._resource)).then((hasResource) => {
+      if (hasResource) this._render();
+    });
+  }
 
   receiveResource = async (resource) => {
     if (!resource || !resource.uri) return false;
@@ -51,13 +64,40 @@ export class FlowCloseToggle extends ReceiveResourceOS {
     return true;
   }
 
+  _patchUrl() {
+    return currentMonthChangelogUrl(this.baseURI);
+  }
+
+  _isWritable() {
+    if (!this._os) return false;
+    return Boolean(this._os.store.get(this._patchUrl()).editable);
+  }
+
+  _subscribePatchTarget() {
+    if (!this._os || this._patchSub) return;
+    const url = this._patchUrl();
+    const target = this._os.store.get(url);
+    this._patchSub = target
+      .observeChanges({
+        filterFn: (quad) =>
+          quad.subject.value === url || quad.object.value === url,
+        observes: () => this._os.store.get(url).editable,
+        compare: (a, b) => a === b,
+      })
+      .subscribe(() => this._render());
+  }
+
   _render() {
+    this._subscribePatchTarget();
+    if (!this._isWritable()) {
+      this.replaceChildren();
+      return;
+    }
     const closed = this.hasAttribute("closed");
     const button = document.createElement("button");
     button.type = "button";
-    button.textContent = closed
-      ? "Reopen for this draft"
-      : "Close for this draft";
+    button.className = "flow-link-button";
+    button.textContent = closed ? "Reopen comment" : "Close comment";
     if (!this._resource?.uri) {
       this.setAttribute("error", "missing-uri");
       button.disabled = true;
@@ -75,7 +115,7 @@ export class FlowCloseToggle extends ReceiveResourceOS {
     this._render();
 
     void (async () => {
-      const patchUrl = currentMonthChangelogUrl(this.baseURI);
+      const patchUrl = this._patchUrl();
       const body = willClose ? this._insertsBody() : this._deletesBody();
       try {
         const response = await this._os.session.authenticatedFetch(patchUrl, {
