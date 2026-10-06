@@ -1,50 +1,15 @@
 import { ReceiveResourceOS } from "./ReceiveResourceOS.js";
 import { currentMonthChangelogUrl } from "./currentMonthChangelogUrl.js";
+import { loadChangelog } from "./loadChangelog.js";
 
+const LDP_CONTAINS = "http://www.w3.org/ns/ldp#contains";
+const PROV_GENERATED = "http://www.w3.org/ns/prov#generated";
 const PROV_USED = "http://www.w3.org/ns/prov#used";
-const PROV_WAS_GENERATED_BY = "http://www.w3.org/ns/prov#wasGeneratedBy";
-const MAX_VERSION_RESOURCES = 50;
+const PROV_ENDED_AT_TIME = "http://www.w3.org/ns/prov#endedAtTime";
+const MAX_CHANGELOG_RESOURCES = 50;
 
 function isDraftVersionUri(uri) {
   return /\/history\/draft\/?$/.test(new URL(uri).pathname);
-}
-
-export function extractCommentUrisFromChangelogMonth(turtle, pageOrigin) {
-  const used = new Set();
-  const chunks = turtle.split(/\n<#/);
-  for (const chunk of chunks) {
-    const usedMatch = chunk.match(/prov:used\s+(.+?)(?:;|\.\s*$)/m);
-    if (!usedMatch) continue;
-    const uris = usedMatch[1].match(/<[^>]+>/g) || [];
-    for (const wrapped of uris) {
-      const clean = wrapped.slice(1, -1);
-      try {
-        if (new URL(clean).origin !== pageOrigin) {
-          used.add(clean);
-        }
-      } catch {
-        // relative URI or malformed — skip
-      }
-    }
-  }
-  return used;
-}
-
-async function fetchDraftChangelogUsedUris(os, versionUri) {
-  const monthUrl = currentMonthChangelogUrl(versionUri);
-  try {
-    const response = await os.session.authenticatedFetch(monthUrl, {
-      headers: { Accept: "text/turtle" },
-    });
-    if (!response.ok) return new Set();
-    const turtle = await response.text();
-    return extractCommentUrisFromChangelogMonth(
-      turtle,
-      new URL(versionUri).origin,
-    );
-  } catch {
-    return new Set();
-  }
 }
 
 function relationUris(store, subjectUri, predicate) {
@@ -54,90 +19,141 @@ function relationUris(store, subjectUri, predicate) {
     .flatMap((relation) => relation.uris);
 }
 
-function sameOrigin(left, right) {
-  return new URL(left).origin === new URL(right).origin;
+function withoutFragment(uri) {
+  const index = uri.indexOf("#");
+  return index === -1 ? uri : uri.slice(0, index);
 }
 
-async function activityUrisForVersion(store, versionUri, cache) {
-  if (cache.has(versionUri)) return cache.get(versionUri);
+function normalizeUri(uri) {
+  return uri.endsWith("/") ? uri.slice(0, -1) : uri;
+}
 
-  await store.fetch(versionUri);
-  let activityUris = relationUris(store, versionUri, PROV_WAS_GENERATED_BY);
+function changelogRootFor(versionUri) {
   const url = new URL(versionUri);
-  if (activityUris.length === 0 && url.pathname.endsWith("/")) {
-    await store.fetch(new URL("index.ttl", url).href);
-    activityUris = relationUris(store, versionUri, PROV_WAS_GENERATED_BY);
+  const match = url.pathname.match(/^(.*\/history\/)/);
+  if (!match) return null;
+  url.pathname = `${match[1]}changelog/`;
+  return url.href;
+}
+
+async function collectChangelogDocuments(os, versionUri) {
+  const documents = new Set();
+  const visited = new Set();
+  const queue = [];
+
+  const root = changelogRootFor(versionUri);
+  if (root) {
+    documents.add(root);
+    queue.push(root);
+  }
+  if (isDraftVersionUri(versionUri)) {
+    const currentMonth = currentMonthChangelogUrl(versionUri);
+    if (!documents.has(currentMonth)) {
+      documents.add(currentMonth);
+      queue.push(currentMonth);
+    }
   }
 
-  cache.set(versionUri, activityUris);
-  return activityUris;
-}
-
-export async function resolveVersionContext(os, versionUri) {
-  const usedUris = new Set();
-  const directUsedUris = new Set();
-  const activityUris = new Set();
-  const visitedVersions = new Set();
-  const versionActivities = new Map();
-  const pendingVersions = [versionUri];
-
-  while (pendingVersions.length > 0) {
-    if (visitedVersions.size >= MAX_VERSION_RESOURCES) {
+  while (queue.length > 0) {
+    if (visited.size >= MAX_CHANGELOG_RESOURCES) {
       throw new Error(
-        `Version traversal exceeded ${MAX_VERSION_RESOURCES} resources.`,
+        `Changelog traversal exceeded ${MAX_CHANGELOG_RESOURCES} resources.`,
       );
     }
 
-    const currentVersion = pendingVersions.shift();
-    if (visitedVersions.has(currentVersion)) continue;
-    visitedVersions.add(currentVersion);
+    const documentUri = queue.shift();
+    if (visited.has(documentUri)) continue;
+    visited.add(documentUri);
 
-    const generatedBy = await activityUrisForVersion(
-      os.store,
-      currentVersion,
-      versionActivities,
-    );
+    const loaded = await loadChangelog(os, documentUri);
+    if (!loaded) continue;
 
-    for (const activityUri of generatedBy) {
-      activityUris.add(activityUri);
-      await os.store.fetch(activityUri);
-      const inputs = relationUris(os.store, activityUri, PROV_USED);
+    for (const child of relationUris(os.store, documentUri, LDP_CONTAINS)) {
+      const childDocument = withoutFragment(child);
+      if (documents.has(childDocument)) continue;
+      documents.add(childDocument);
+      queue.push(childDocument);
+    }
+  }
 
-      for (const inputUri of inputs) {
-        usedUris.add(inputUri);
-        if (currentVersion === versionUri) directUsedUris.add(inputUri);
-        if (
-          !sameOrigin(versionUri, inputUri) ||
-          visitedVersions.has(inputUri)
-        ) {
-          continue;
-        }
+  return documents;
+}
 
-        if (
-          (await activityUrisForVersion(os.store, inputUri, versionActivities))
-            .length > 0
-        ) {
-          pendingVersions.push(inputUri);
-        }
+function activitiesInDocuments(store, documents) {
+  const activities = new Map();
+
+  for (const statement of store.statementsMatching()) {
+    if (!documents.has(statement.graph?.value)) continue;
+    const predicate = statement.predicate?.value;
+    if (
+      predicate !== PROV_USED &&
+      predicate !== PROV_GENERATED &&
+      predicate !== PROV_ENDED_AT_TIME
+    ) {
+      continue;
+    }
+
+    const subject = statement.subject.value;
+    let activity = activities.get(subject);
+    if (!activity) {
+      activity = { uri: subject, generated: [], used: [], endedAtTime: null };
+      activities.set(subject, activity);
+    }
+
+    if (predicate === PROV_USED) activity.used.push(statement.object.value);
+    else if (predicate === PROV_GENERATED)
+      activity.generated.push(statement.object.value);
+    else activity.endedAtTime = statement.object.value;
+  }
+
+  return [...activities.values()];
+}
+
+function cutoffForVersion(activities, versionUri) {
+  const target = normalizeUri(versionUri);
+  const match = activities.find((activity) =>
+    activity.generated.some(
+      (generated) => normalizeUri(generated) === target,
+    ),
+  );
+  return match?.endedAtTime ?? null;
+}
+
+export async function resolveVersionContext(os, versionUri) {
+  const origin = new URL(versionUri).origin;
+  const documents = await collectChangelogDocuments(os, versionUri);
+  const activities = activitiesInDocuments(os.store, documents);
+
+  const cutoff = isDraftVersionUri(versionUri)
+    ? null
+    : cutoffForVersion(activities, versionUri);
+  const scoped =
+    cutoff === null
+      ? activities
+      : activities.filter(
+          (activity) =>
+            activity.endedAtTime !== null && activity.endedAtTime <= cutoff,
+        );
+
+  const usedUris = new Set();
+  for (const activity of scoped) {
+    for (const usedUri of activity.used) {
+      let usedOrigin;
+      try {
+        usedOrigin = new URL(usedUri).origin;
+      } catch {
+        continue;
       }
+      if (usedOrigin !== origin) usedUris.add(usedUri);
     }
   }
 
   return {
     versionUri,
     usedUris,
-    directUsedUris,
-    activityUris,
-    visitedVersions,
+    activityUris: new Set(activities.map((activity) => activity.uri)),
+    visitedVersions: documents,
   };
-}
-
-export async function resolveVersionContextWithDraft(os, versionUri) {
-  const context = await resolveVersionContext(os, versionUri);
-  if (!isDraftVersionUri(versionUri)) return context;
-  const draftUsed = await fetchDraftChangelogUsedUris(os, versionUri);
-  for (const uri of draftUsed) context.usedUris.add(uri);
-  return context;
 }
 
 function getBaseUri(pageBaseURI) {
@@ -198,7 +214,7 @@ export class FlowVersionContext extends ReceiveResourceOS {
     this.removeAttribute("error");
     this.setAttribute("loading", "");
 
-    this._contextPromise = resolveVersionContextWithDraft(this.os, versionUri)
+    this._contextPromise = resolveVersionContext(this.os, versionUri)
       .then((context) => {
         if (generation !== this._generation) return context;
         this.removeAttribute("loading");

@@ -1,151 +1,131 @@
 // @vitest-environment happy-dom
 // @ts-nocheck
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  extractCommentUrisFromChangelogMonth,
-  resolveVersionContextWithDraft,
-} from "./FlowVersionContext.js";
-import { createMockOs } from "./_test-harness.js";
+import { describe, it, expect } from "vitest";
+import { resolveVersionContext } from "./FlowVersionContext.js";
+import { createMockOs, createMockStore } from "./_test-harness.js";
 import { currentMonthChangelogUrl } from "./currentMonthChangelogUrl.js";
 
-const FIXED_DATE = new Date(Date.UTC(2026, 8, 15, 12, 0, 0));
-const DRAFT_URI = "https://flowcoop.eu/topics/task_management/history/draft/";
-const MONTH_URL = currentMonthChangelogUrl(DRAFT_URI, FIXED_DATE);
+const BASE = "https://flowcoop.eu/topics/task_management/history/";
+const DRAFT_URI = `${BASE}draft/`;
+const VERSION_A = `${BASE}aaa/`;
+const ROOT = `${BASE}changelog/`;
+const YEAR = `${ROOT}2026/`;
+const MONTH = `${YEAR}09`;
+const ACTIVITY_A = `${MONTH}#aaa`;
+const ACTIVITY_B = `${MONTH}#bbb`;
 
-const sampleTurtle = `@prefix as: <https://www.w3.org/ns/activitystreams#>.
-@prefix prov: <http://www.w3.org/ns/prov#>.
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+const LDP_CONTAINS = "http://www.w3.org/ns/ldp#contains";
+const PROV_GENERATED = "http://www.w3.org/ns/prov#generated";
+const PROV_USED = "http://www.w3.org/ns/prov#used";
+const PROV_ENDED_AT_TIME = "http://www.w3.org/ns/prov#endedAtTime";
 
-<#6789946> a prov:Activity;
-    prov:generated <../../6789946>;
-    prov:endedAtTime "2026-09-10T12:21:23Z"^^xsd:dateTime;
-    rdfs:label "migrate to flow-coop-pages (partly broken)";
-    prov:used <https://mastodon.social/@jg10/117116262041398775>, <https://mastodon.social/@jg10/117116293386353207>, <https://mastodon.social/users/jg10/statuses/117116304491150823>.
-<#adc851d> a prov:Activity;
-    prov:generated <../../adc851d>;
-    prov:used <../../6789946>;
-    prov:endedAtTime "2026-09-10T12:46:34Z"^^xsd:dateTime;
-    rdfs:label "fix: task management data".
-<#0b4ca0d> a prov:Activity;
-    prov:generated <../../0b4ca0d>;
-    prov:used <../../1b3cc22>;
-    prov:endedAtTime "2026-09-29T10:38:21Z"^^xsd:dateTime;
-    rdfs:label "PATCH topics/task_management/.changelog/2026/09.ttl via solid-github-netlify".
-<> a as:OrderedCollectionPage;
-    as:partOf <../>;
-    as:items <#6789946>, <#adc851d>, <#0b4ca0d>.
-`;
+const COMMENT_1 = "https://mastodon.social/users/jg10/statuses/1";
+const COMMENT_2 = "https://mastodon.social/users/jg10/statuses/2";
+const COMMENT_3 = "https://mastodon.social/users/jg10/statuses/3";
+const PREVIOUS_VERSION = `${BASE}prev`;
 
-describe("extractCommentUrisFromChangelogMonth", () => {
-  const pageOrigin = "https://flowcoop.eu";
+const STATEMENTS = [
+  { subject: ROOT, predicate: LDP_CONTAINS, object: YEAR, graph: ROOT },
+  { subject: YEAR, predicate: LDP_CONTAINS, object: MONTH, graph: YEAR },
+  {
+    subject: ACTIVITY_A,
+    predicate: PROV_GENERATED,
+    object: VERSION_A,
+    graph: MONTH,
+  },
+  {
+    subject: ACTIVITY_A,
+    predicate: PROV_ENDED_AT_TIME,
+    object: "2026-09-10T12:00:00Z",
+    graph: MONTH,
+  },
+  { subject: ACTIVITY_A, predicate: PROV_USED, object: COMMENT_1, graph: MONTH },
+  { subject: ACTIVITY_A, predicate: PROV_USED, object: COMMENT_2, graph: MONTH },
+  {
+    subject: ACTIVITY_A,
+    predicate: PROV_USED,
+    object: PREVIOUS_VERSION,
+    graph: MONTH,
+  },
+  {
+    subject: ACTIVITY_B,
+    predicate: PROV_GENERATED,
+    object: `${BASE}bbb/`,
+    graph: MONTH,
+  },
+  {
+    subject: ACTIVITY_B,
+    predicate: PROV_ENDED_AT_TIME,
+    object: "2026-09-20T12:00:00Z",
+    graph: MONTH,
+  },
+  { subject: ACTIVITY_B, predicate: PROV_USED, object: COMMENT_3, graph: MONTH },
+];
 
-  it("collects external comment URIs from prov:used across all activities", () => {
-    const used = extractCommentUrisFromChangelogMonth(sampleTurtle, pageOrigin);
-    expect(used).toEqual(
-      new Set([
-        "https://mastodon.social/@jg10/117116262041398775",
-        "https://mastodon.social/@jg10/117116293386353207",
-        "https://mastodon.social/users/jg10/statuses/117116304491150823",
-      ]),
-    );
+function mockOs(storeOptions) {
+  return createMockOs({ store: createMockStore(storeOptions) });
+}
+
+describe("resolveVersionContext", () => {
+  it("collects external prov:used URIs across the changelog for a draft", async () => {
+    const os = mockOs({ statements: STATEMENTS });
+    const context = await resolveVersionContext(os, DRAFT_URI);
+
+    expect(context.usedUris).toEqual(new Set([COMMENT_1, COMMENT_2, COMMENT_3]));
+    expect(context.usedUris.has(PREVIOUS_VERSION)).toBe(false);
   });
 
-  it("excludes same-origin version URIs (e.g. <../../shortSha>)", () => {
-    const used = extractCommentUrisFromChangelogMonth(sampleTurtle, pageOrigin);
-    for (const uri of used) {
-      expect(new URL(uri).origin).not.toBe(pageOrigin);
+  it("applies the version date cutoff for a published version", async () => {
+    const os = mockOs({ statements: STATEMENTS });
+    const context = await resolveVersionContext(os, VERSION_A);
+
+    expect(context.usedUris).toEqual(new Set([COMMENT_1, COMMENT_2]));
+    expect(context.usedUris.has(COMMENT_3)).toBe(false);
+  });
+
+  it("falls back to every activity when the version is not in the changelog", async () => {
+    const os = mockOs({ statements: STATEMENTS });
+    const context = await resolveVersionContext(os, `${BASE}missing/`);
+
+    expect(context.usedUris).toEqual(new Set([COMMENT_1, COMMENT_2, COMMENT_3]));
+  });
+
+  it("fetches each changelog document once and reuses the loadChangelog cache", async () => {
+    const os = mockOs({ statements: STATEMENTS });
+    const currentMonth = currentMonthChangelogUrl(DRAFT_URI);
+
+    await resolveVersionContext(os, DRAFT_URI);
+    const callsAfterFirst = os.store.fetch.mock.calls.map(([uri]) => uri);
+    await resolveVersionContext(os, DRAFT_URI);
+
+    for (const url of [ROOT, YEAR, MONTH, currentMonth]) {
+      expect(callsAfterFirst.filter((uri) => uri === url)).toHaveLength(1);
     }
+    expect(os.store.fetch).toHaveBeenCalledTimes(callsAfterFirst.length);
   });
 
-  it("returns an empty set for an empty body", () => {
-    expect(extractCommentUrisFromChangelogMonth("", pageOrigin).size).toBe(0);
+  it("does not throw and yields no used URIs when a changelog document fails", async () => {
+    const os = mockOs({ statements: STATEMENTS, failOn: [ROOT] });
+    const context = await resolveVersionContext(os, DRAFT_URI);
+
+    expect(context.usedUris.size).toBe(0);
   });
 
-  it("returns an empty set when no activities have external prov:used", () => {
-    const turtle = `<#abc> a prov:Activity;
-    prov:used <../../previous>.`;
-    expect(extractCommentUrisFromChangelogMonth(turtle, pageOrigin).size).toBe(0);
+  it("records every activity it scanned", async () => {
+    const os = mockOs({ statements: STATEMENTS });
+    const context = await resolveVersionContext(os, DRAFT_URI);
+
+    expect(context.activityUris).toEqual(new Set([ACTIVITY_A, ACTIVITY_B]));
   });
 
-  it("handles a single prov:used URI without trailing comma", () => {
-    const turtle = `<#abc> a prov:Activity;
-    prov:used <https://other.example/comment/1>.`;
-    expect(extractCommentUrisFromChangelogMonth(turtle, pageOrigin)).toEqual(
-      new Set(["https://other.example/comment/1"]),
-    );
-  });
-
-  it("deduplicates URIs that appear across multiple activities", () => {
-    const turtle = `<#a> a prov:Activity;
-    prov:used <https://other.example/x>.
-<#b> a prov:Activity;
-    prov:used <https://other.example/x>, <https://other.example/y>.`;
-    const used = extractCommentUrisFromChangelogMonth(turtle, pageOrigin);
-    expect(used.size).toBe(2);
-    expect(used.has("https://other.example/x")).toBe(true);
-    expect(used.has("https://other.example/y")).toBe(true);
-  });
-});
-
-describe("resolveVersionContextWithDraft", () => {
-  beforeEach(() => {
-    vi.useFakeTimers({ toFake: ["Date"] });
-    vi.setSystemTime(FIXED_DATE);
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-    vi.restoreAllMocks();
-  });
-
-  it("fetches the changelog through the authenticated session for a draft URI", async () => {
-    const monthTurtle = `<#abc> a prov:Activity;
-    prov:used <https://mastodon.social/users/jg10/statuses/1>, <https://mastodon.social/users/jg10/statuses/2>.
-.`;
-
-    const os = createMockOs();
-    os.session.authenticatedFetch.mockResolvedValue({
-      ok: true,
-      status: 200,
-      text: () => Promise.resolve(monthTurtle),
+  it("terminates when containers reference each other", async () => {
+    const os = mockOs({
+      statements: [
+        { subject: ROOT, predicate: LDP_CONTAINS, object: YEAR, graph: ROOT },
+        { subject: YEAR, predicate: LDP_CONTAINS, object: ROOT, graph: YEAR },
+      ],
     });
-
-    const context = await resolveVersionContextWithDraft(os, DRAFT_URI);
-
-    expect(os.session.authenticatedFetch).toHaveBeenCalledWith(
-      MONTH_URL,
-      expect.objectContaining({ headers: expect.any(Object) }),
-    );
-    expect(context.usedUris.has("https://mastodon.social/users/jg10/statuses/1")).toBe(true);
-    expect(context.usedUris.has("https://mastodon.social/users/jg10/statuses/2")).toBe(true);
-  });
-
-  it("does not fetch the changelog for a non-draft URI", async () => {
-    const os = createMockOs();
-    const versionUri = "https://flowcoop.eu/topics/task_management/history/6789946/";
-    const context = await resolveVersionContextWithDraft(os, versionUri);
-
-    expect(os.session.authenticatedFetch).not.toHaveBeenCalled();
-    expect(context.usedUris.size).toBe(0);
-  });
-
-  it("returns the existing context unchanged when the changelog fetch fails", async () => {
-    const versionUri = "https://flowcoop.eu/topics/task_management/history/draft/";
-    const os = createMockOs();
-    os.session.authenticatedFetch.mockResolvedValue({ ok: false, status: 404 });
-
-    const context = await resolveVersionContextWithDraft(os, versionUri);
-
-    expect(context.usedUris.size).toBe(0);
-  });
-
-  it("returns the existing context unchanged when fetch throws", async () => {
-    const versionUri = "https://flowcoop.eu/topics/task_management/history/draft/";
-    const os = createMockOs();
-    os.session.authenticatedFetch.mockRejectedValue(new Error("network"));
-
-    const context = await resolveVersionContextWithDraft(os, versionUri);
+    const context = await resolveVersionContext(os, DRAFT_URI);
 
     expect(context.usedUris.size).toBe(0);
   });
