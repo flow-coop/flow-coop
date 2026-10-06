@@ -5,6 +5,7 @@ import { resolveVersionContext } from "./FlowVersionContext.js";
 import { createMockOs, createMockStore } from "./_test-harness.js";
 import { currentMonthChangelogUrl } from "./currentMonthChangelogUrl.js";
 
+const TOPIC_URI = "https://flowcoop.eu/topics/task_management/";
 const BASE = "https://flowcoop.eu/topics/task_management/history/";
 const DRAFT_URI = `${BASE}draft/`;
 const VERSION_A = `${BASE}aaa/`;
@@ -13,11 +14,13 @@ const YEAR = `${ROOT}2026/`;
 const MONTH = `${YEAR}09`;
 const ACTIVITY_A = `${MONTH}#aaa`;
 const ACTIVITY_B = `${MONTH}#bbb`;
+const SEED_ACTIVITY = `${MONTH}#0b4ca0d`;
 
 const LDP_CONTAINS = "http://www.w3.org/ns/ldp#contains";
 const PROV_GENERATED = "http://www.w3.org/ns/prov#generated";
 const PROV_USED = "http://www.w3.org/ns/prov#used";
 const PROV_ENDED_AT_TIME = "http://www.w3.org/ns/prov#endedAtTime";
+const PROV_WAS_GENERATED_BY = "http://www.w3.org/ns/prov#wasGeneratedBy";
 
 const COMMENT_1 = "https://mastodon.social/users/jg10/statuses/1";
 const COMMENT_2 = "https://mastodon.social/users/jg10/statuses/2";
@@ -60,6 +63,12 @@ const STATEMENTS = [
     graph: MONTH,
   },
   { subject: ACTIVITY_B, predicate: PROV_USED, object: COMMENT_3, graph: MONTH },
+  {
+    subject: TOPIC_URI,
+    predicate: PROV_WAS_GENERATED_BY,
+    object: SEED_ACTIVITY,
+    graph: TOPIC_URI,
+  },
 ];
 
 function mockOs(storeOptions) {
@@ -71,6 +80,17 @@ describe("resolveVersionContext", () => {
     const os = mockOs({ statements: STATEMENTS });
     const context = await resolveVersionContext(os, DRAFT_URI);
 
+    expect(context.usedUris).toEqual(new Set([COMMENT_1, COMMENT_2, COMMENT_3]));
+    expect(context.usedUris.has(PREVIOUS_VERSION)).toBe(false);
+  });
+
+  it("derives the changelog root from prov:wasGeneratedBy for a version outside /history/", async () => {
+    const os = mockOs({ statements: STATEMENTS });
+    const context = await resolveVersionContext(os, TOPIC_URI);
+
+    expect(os.store.fetch).toHaveBeenCalledWith(TOPIC_URI);
+    expect(os.store.fetch).toHaveBeenCalledWith(ROOT);
+    expect(os.store.fetch).toHaveBeenCalledWith(MONTH);
     expect(context.usedUris).toEqual(new Set([COMMENT_1, COMMENT_2, COMMENT_3]));
     expect(context.usedUris.has(PREVIOUS_VERSION)).toBe(false);
   });

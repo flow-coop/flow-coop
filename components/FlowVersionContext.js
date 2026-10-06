@@ -1,11 +1,11 @@
 import { ReceiveResourceOS } from "./ReceiveResourceOS.js";
-import { currentMonthChangelogUrl } from "./currentMonthChangelogUrl.js";
 import { loadChangelog } from "./loadChangelog.js";
 
 const LDP_CONTAINS = "http://www.w3.org/ns/ldp#contains";
 const PROV_GENERATED = "http://www.w3.org/ns/prov#generated";
 const PROV_USED = "http://www.w3.org/ns/prov#used";
 const PROV_ENDED_AT_TIME = "http://www.w3.org/ns/prov#endedAtTime";
+const PROV_WAS_GENERATED_BY = "http://www.w3.org/ns/prov#wasGeneratedBy";
 const MAX_CHANGELOG_RESOURCES = 50;
 
 function isDraftVersionUri(uri) {
@@ -36,18 +36,51 @@ function changelogRootFor(versionUri) {
   return url.href;
 }
 
-async function collectChangelogDocuments(os, versionUri) {
+function changelogRootForActivity(activityUri) {
+  const url = new URL(activityUri);
+  const match = url.pathname.match(/^(.*\/history\/changelog\/)/);
+  if (!match) return null;
+  url.pathname = match[1];
+  url.hash = "";
+  return url.href;
+}
+
+function currentMonthChangelogUrlForRoot(root, date = new Date()) {
+  const yyyy = date.getUTCFullYear();
+  const mm = String(date.getUTCMonth() + 1).padStart(2, "0");
+  return new URL(`${yyyy}/${mm}`, root).href;
+}
+
+async function discoverChangelogRoot(os, versionUri) {
+  const pathRoot = changelogRootFor(versionUri);
+  if (pathRoot) return { root: pathRoot, includeAll: isDraftVersionUri(versionUri) };
+
+  const loaded = await loadChangelog(os, versionUri);
+  if (!loaded) return { root: null, includeAll: true };
+
+  for (const activityUri of relationUris(
+    os.store,
+    versionUri,
+    PROV_WAS_GENERATED_BY,
+  )) {
+    const root = changelogRootForActivity(activityUri);
+    if (root) return { root, includeAll: true };
+  }
+
+  return { root: null, includeAll: true };
+}
+
+async function collectChangelogDocuments(os, root, includeCurrentMonth) {
   const documents = new Set();
   const visited = new Set();
   const queue = [];
 
-  const root = changelogRootFor(versionUri);
   if (root) {
     documents.add(root);
     queue.push(root);
   }
-  if (isDraftVersionUri(versionUri)) {
-    const currentMonth = currentMonthChangelogUrl(versionUri);
+  if (root && includeCurrentMonth) {
+    const currentMonth = currentMonthChangelogUrlForRoot(root);
     if (!documents.has(currentMonth)) {
       documents.add(currentMonth);
       queue.push(currentMonth);
@@ -121,12 +154,11 @@ function cutoffForVersion(activities, versionUri) {
 
 export async function resolveVersionContext(os, versionUri) {
   const origin = new URL(versionUri).origin;
-  const documents = await collectChangelogDocuments(os, versionUri);
+  const { root, includeAll } = await discoverChangelogRoot(os, versionUri);
+  const documents = await collectChangelogDocuments(os, root, includeAll);
   const activities = activitiesInDocuments(os.store, documents);
 
-  const cutoff = isDraftVersionUri(versionUri)
-    ? null
-    : cutoffForVersion(activities, versionUri);
+  const cutoff = includeAll ? null : cutoffForVersion(activities, versionUri);
   const scoped =
     cutoff === null
       ? activities
