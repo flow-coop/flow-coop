@@ -13,7 +13,7 @@ export function createMockOs(overrides = {}) {
     store: {
       fetch: vi.fn().mockResolvedValue(undefined),
       get: vi.fn().mockImplementation((uri) => mockThing(uri)),
-      statementsMatching: vi.fn(() => []),
+      flagAuthorizationMetadata: vi.fn(),
     },
     ...overrides,
   };
