@@ -67,7 +67,8 @@ flow-version-context,
 flow-collection-pages,
 flow-sanitized-content,
 flow-fediverse-interaction,
-import-html {
+import-html,
+pos-login {
   display: block;
 }
 
@@ -77,6 +78,13 @@ flow-if-open {
 
 header {
   margin-block-end: 2.75rem;
+}
+
+.flow-site-footer {
+  margin-block-start: 4rem;
+  padding-block-start: 1.5rem;
+  border-block-start: 1px solid var(--flow-border);
+  color: var(--flow-muted);
 }
 
 h1 {
