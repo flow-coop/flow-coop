@@ -45,13 +45,13 @@ function buildOs() {
   return { os, sessionInfo$, authenticatedFetch };
 }
 
-function mountToggle(os) {
+function mountToggle(os, baseURI = DRAFT_URL) {
   const host = document.createElement("div");
   host.innerHTML = `<flow-close-toggle></flow-close-toggle>`;
   document.body.appendChild(host);
   const element = host.querySelector("flow-close-toggle");
   Object.defineProperty(element, "baseURI", {
-    value: DRAFT_URL,
+    value: baseURI,
     configurable: true,
   });
   element.os = os;
@@ -70,6 +70,32 @@ describe("FlowCloseToggle integration (real pod-os + rdflib)", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it("normalizes the local dev host when deriving the patch URL", async () => {
+    const { os } = buildOs();
+    const { element } = mountToggle(
+      os,
+      "http://localhost:9091/topics/task_management/",
+    );
+    expect(element._patchUrl()).toBe(
+      "https://flowcoop.eu/topics/task_management/history/changelog/2026/09",
+    );
+  });
+
+  it("shows the control on a local topic page when the pod grants write", async () => {
+    const { os, sessionInfo$ } = buildOs();
+    sessionInfo$.next({ isLoggedIn: true, webId: WEB_ID });
+    const { element } = mountToggle(
+      os,
+      "http://localhost:9091/topics/task_management/",
+    );
+
+    await vi.waitFor(
+      () => expect(element.querySelector("button")).not.toBeNull(),
+      { timeout: 2000 },
+    );
+    expect(os.store.get(PATCH_URL).editable).toBe(true);
   });
 
   it("derives editable from WAC-Allow via the real store fetcher", async () => {

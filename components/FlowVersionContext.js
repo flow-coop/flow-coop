@@ -1,5 +1,6 @@
 import { ReceiveResourceOS } from "./ReceiveResourceOS.js";
 import { loadChangelog } from "./loadChangelog.js";
+import { getBaseUri } from "./getBaseUri.js";
 
 const LDP_CONTAINS = "http://www.w3.org/ns/ldp#contains";
 const PROV_GENERATED = "http://www.w3.org/ns/prov#generated";
@@ -186,22 +187,6 @@ export async function resolveVersionContext(os, versionUri) {
     activityUris: new Set(activities.map((activity) => activity.uri)),
     visitedVersions: documents,
   };
-}
-
-function getBaseUri(pageBaseURI) {
-  const url = new URL(pageBaseURI);
-
-  if (
-    url.hostname === "localhost" ||
-    url.hostname === "127.0.0.1"
-  ) {
-    return new URL(
-      `${url.pathname}${url.search}${url.hash}`,
-      "https://flowcoop.eu"
-    ).href;
-  }
-
-  return url.href;
 }
 
 export class FlowVersionContext extends ReceiveResourceOS {

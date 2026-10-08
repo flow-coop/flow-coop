@@ -1,5 +1,6 @@
 import { ReceiveResourceOS } from "./ReceiveResourceOS.js";
 import { currentMonthChangelogUrl } from "./currentMonthChangelogUrl.js";
+import { getBaseUri } from "./getBaseUri.js";
 import { loadChangelog, invalidateChangelog } from "./loadChangelog.js";
 
 const PROV_USED = "http://www.w3.org/ns/prov#used";
@@ -60,7 +61,7 @@ export class FlowCloseToggle extends ReceiveResourceOS {
   }
 
   _patchUrl() {
-    return currentMonthChangelogUrl(this.baseURI);
+    return currentMonthChangelogUrl(getBaseUri(this.baseURI));
   }
 
   _isWritable() {
