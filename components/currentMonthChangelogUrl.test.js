@@ -50,3 +50,54 @@ describe("currentMonthChangelogUrl", () => {
     );
   });
 });
+
+describe("currentMonthChangelogUrl from a page URL", () => {
+  const date = new Date(Date.UTC(2026, 8, 15, 12, 0, 0));
+  const expected =
+    "https://flowcoop.eu/topics/task_management/history/changelog/2026/09";
+
+  it("derives the changelog from a topic root URL with a trailing slash", () => {
+    expect(
+      currentMonthChangelogUrl(
+        "https://flowcoop.eu/topics/task_management/",
+        date,
+      ),
+    ).toBe(expected);
+  });
+
+  it("derives the changelog from a topic root URL without a trailing slash", () => {
+    expect(
+      currentMonthChangelogUrl(
+        "https://flowcoop.eu/topics/task_management",
+        date,
+      ),
+    ).toBe(expected);
+  });
+
+  it("derives the changelog from an index.html page URL", () => {
+    expect(
+      currentMonthChangelogUrl(
+        "https://flowcoop.eu/topics/task_management/index.html",
+        date,
+      ),
+    ).toBe(expected);
+  });
+
+  it("derives the changelog from a published version URL", () => {
+    expect(
+      currentMonthChangelogUrl(
+        "https://flowcoop.eu/topics/task_management/history/6789946/",
+        date,
+      ),
+    ).toBe(expected);
+  });
+
+  it("drops the search and hash from the page URL", () => {
+    expect(
+      currentMonthChangelogUrl(
+        "https://flowcoop.eu/topics/task_management/?foo=bar#section",
+        date,
+      ),
+    ).toBe(expected);
+  });
+});
