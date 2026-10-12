@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Discussion - About Flow</title>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' https:; img-src 'self' data: https:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="stylesheet" href="/styles/flow.css" />
+    <script type="module" src="/components/load.js"></script>
+  </head>
+  <body>
+    <flow-page>
+      <h1>About Flow: Discussion</h1>
+      <p>
+        Pages on this site can carry an open discussion, fed from the
+        Fediverse. This page explains how that works, and what it means for
+        what you read.
+      </p>
+      <pos-switch>
+        <pos-case
+          if-property="https://flowcoop.eu/about/discussion/index.ttl#content"
+        >
+          <template>
+            <pos-list
+              rel="https://flowcoop.eu/about/discussion/index.ttl#content"
+            >
+              <template>
+                <pos-app-document-viewer
+                ></pos-app-document-viewer>
+              </template>
+            </pos-list>
+          </template>
+        </pos-case>
+      </pos-switch>
+    </flow-page>
+  </body>
+</html>

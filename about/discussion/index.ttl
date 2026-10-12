@@ -1,0 +1,5 @@
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix schema: <https://schema.org/>.
+<#it> <https://schema.org/name> "Discussion";
+    <https://flowcoop.eu/about/discussion/index.ttl#content> <discussion.md>
+    .
