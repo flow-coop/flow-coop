@@ -1,4 +1,5 @@
 import { ReceiveResourceOS } from "./ReceiveResourceOS.js";
+import { getBaseUri } from "./getBaseUri.js";
 
 const PROV_USED = "http://www.w3.org/ns/prov#used";
 const PROV_WAS_GENERATED_BY = "http://www.w3.org/ns/prov#wasGeneratedBy";
@@ -87,22 +88,6 @@ export async function resolveVersionContext(os, versionUri) {
     activityUris,
     visitedVersions,
   };
-}
-
-function getBaseUri(pageBaseURI) {
-  const url = new URL(pageBaseURI);
-
-  if (
-    url.hostname === "localhost" ||
-    url.hostname === "127.0.0.1"
-  ) {
-    return new URL(
-      `${url.pathname}${url.search}${url.hash}`,
-      "https://flowcoop.eu"
-    ).href;
-  }
-
-  return url.href;
 }
 
 export class FlowVersionContext extends ReceiveResourceOS {
