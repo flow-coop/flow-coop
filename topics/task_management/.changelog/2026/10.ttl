@@ -1,4 +1,4 @@
 @prefix solid: <http://www.w3.org/ns/solid/terms#>.
 @prefix ex: <http://www.example.org/terms#>.
 
-<#current> <http://www.w3.org/ns/prov#used> <https://mastodon.social/@jg10/117211984867595038>, <https://mastodon.social/@robert_guillaume/117223553798307518>.
+<#current> <http://www.w3.org/ns/prov#used> <https://mastodon.social/users/jg10/statuses/117211984867595038>, <https://mastodon.social/ap/users/116979791780719248/statuses/117223553798307518>.
